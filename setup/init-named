@@ -1,0 +1,29 @@
+#!/bin/bash
+set -e
+source /etc/drumee/drumee.sh
+
+echo "Configuring DNS server for $DRUMEE_DOMAIN_NAME"
+
+service named stop
+mkdir -p /var/log/named/
+chown -R bind:bind /var/log/named/
+chown -R bind:bind /etc/bind
+
+if [ "$NSUPDATE_KEY" = "" ];then
+  mkdir -p /etc/bind/keys/
+  export NSUPDATE_KEY=/etc/bind/keys/update.key
+fi 
+
+echo Will use updte key from $NSUPDATE_KEY
+if [ ! -f "$NSUPDATE_KEY" ]; then
+  echo Generating tsig key
+  tsig-keygen -a hmac-sha512 update > $NSUPDATE_KEY
+fi
+
+# Cleanup named journal
+rm -f /etc/bind/*.jnl
+echo Restarting named
+
+service named restart
+
+echo "DNS server has been successfuly setup!"

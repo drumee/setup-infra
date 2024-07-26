@@ -1,0 +1,9 @@
+jitsi-meet-turnserver  jitsi-meet/cert-choice          string Generate a new self-signed certificate
+jitsi-meet-turnserver  jitsi-meet-turnserver/jvb-hostname string jitsi.meet
+jicofo                 jitsi-videobridge/jvb-hostname  string jitsi.meet
+jitsi-meet-prosody     jitsi-meet-prosody/jvb-hostname string jitsi.meet
+jitsi-meet-web-config  jitsi-meet/jvb-hostname         string jitsi.meet
+jitsi-meet-web-config  jitsi-meet/cert-choice          string Generate a new self-signed certificate
+jitsi-meet-web-config  jitsi-videobridge/jvb-hostname  string jitsi.meet
+jitsi-meet-web-config  jitsi-meet/jaas-choice          boolean false
+jitsi-videobridge2     jitsi-videobridge/jvb-hostname  string jitsi.meet

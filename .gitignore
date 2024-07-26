@@ -128,3 +128,16 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Other
+._.DS_Store
+.DS_Store
+.stderr
+.tmp*
+.sass-cache/
+*trash/
+git-status.*
+*~
+.fuse*
+build/
+t

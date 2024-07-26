@@ -1,0 +1,69 @@
+#!/bin/bash
+
+echo "Configuring certificates..."
+#-------------------
+function make_certs(){
+  sum=0
+  dom=$1
+  echo Generating "${dom}" cetificates...
+  while [ ! -f ${ACME_CERTS_DIR}/${dom}_ecc/fullchain.cer ]; do
+    ./acme.sh --issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate
+    if [ $? = "0" ]; then
+      echo Certificate have been sucessfully created.
+    else
+      echo Certificate have not been created. Retrying in 5 seconds. Please wait.
+      sleep 5
+    fi
+    if [ "$sum" -gt "10" ]; then
+      echo Failed to create certifiicates. Please rune manually
+      echo $ACME_DIR/acme.sh --issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate
+    fi
+    sum=$(expr 1 + $sum)
+  done
+}
+
+set +e
+cron_entry=$(crontab -l | grep acme-cron)
+if [ "$cron_entry" != "" ]; then
+  echo "Acme cron already created"
+  exit 0
+fi
+
+set +e
+source /etc/drumee/drumee.sh
+
+if [ "$OWN_SSL" != "" ]; then
+  echo "You will have to setup your own SSL certificates"
+  exit 0
+fi
+
+if [ "$ACME_DIR" = "" ]; then
+  export ACME_DIR=/usr/share/acme
+fi
+
+if [ ! -d $ACME_DIR ]; then
+  mkdir -p $ACME_DIR
+fi
+
+cd $ACME_DIR
+
+failed=0
+
+./acme.sh --register-account -m $ACME_EMAIL_ACCOUNT --home $ACME_DIR  --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR
+
+
+make_certs $DRUMEE_DOMAIN_NAME
+make_certs $JITSI_DOMAIN
+
+usermod -a -G $DRUMEE_SYSTEM_GROUP prosody
+usermod -a -G $DRUMEE_SYSTEM_GROUP jvb
+usermod -a -G $DRUMEE_SYSTEM_GROUP jicofo
+usermod -a -G $DRUMEE_SYSTEM_GROUP turnserver
+usermod -a -G $DRUMEE_SYSTEM_GROUP postfix
+
+if [ -d "$ACME_CERTS_DIR" ]; then
+  chown -R $DRUMEE_SYSTEM_USER:$DRUMEE_SYSTEM_GROUP $ACME_CERTS_DIR 
+fi
+
+echo "ACME has been successfuly installed!"
+exit 0

@@ -1,0 +1,13 @@
+//
+// Configs setup by Drumee infra-helper utility
+//
+
+include "/etc/bind/named.conf.log";
+include "<%= nsupdate_key %>";
+zone "<%= domain %>" {
+    type master;
+    file "/etc/bind/db.<%= domain %>";
+    allow-query { any; };
+    allow-update { key "update"; };
+    allow-transfer { <%= public_ip4 %>; };
+};

@@ -1,0 +1,6 @@
+# Drumee cron
+30 0 2 * * /var/lib/drumee/utils/cron/acme-cron > /var/log/acme.cron.log 2>&1
+30 2 * * * /var/lib/drumee/utils/cron/tmp-files-cleaner > /var/log/drumee.cleaner.log 2>&1
+5 * * * * /var/lib/drumee/utils/cron/watch-dog > /dev/null 2>&1
+0 0 * * * /var/lib/drumee/utils/cron/backup-db > /dev/null 2>&1
+0 1 * * * /var/lib/drumee/utils/cron/backup-storage > /dev/null 2>&1
