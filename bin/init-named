@@ -22,8 +22,14 @@ fi
 
 # Cleanup named journal
 rm -f /etc/bind/*.jnl
-echo Restarting named
 
+c=$(grep etc/bind /etc/apparmor.d/local/usr.sbin.named | wc -l)
+if [ "$c" = "0" ]; then
+  echo /etc/bind/** rw, >> /etc/apparmor.d/local/usr.sbin.named
+  apparmor_parser -r /etc/apparmor.d/usr.sbin.named
+fi
+
+echo Restarting named
 service named restart
 
 echo "DNS server has been successfuly setup!"
