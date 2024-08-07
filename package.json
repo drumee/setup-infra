@@ -9,10 +9,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:somanos/drumee-infra-setup.git"
+    "url": "git@github.com:drumee/infra-setup.git"
   },
   "bugs": {
-    "url": "https://github.com/somanos/drumee-infra-setup/issues"
+    "url": "https://github.com/drumee/infra-setup/issues"
   },
   "author": "Somanos Sar <somanos@drumee.com>",
   "license": "AGPL V3",
