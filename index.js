@@ -213,7 +213,7 @@ function getSocketPath() {
 }
 
 function makeData(opt) {
-  let data = { ...sysEnv(), domain_name, domain: domain_name };
+  let data = sysEnv();
 
   data.chroot = Template.chroot();
   data.acme_store = join(data.certs_dir, `${data.domain_name}_ecc`);
@@ -230,6 +230,7 @@ function makeData(opt) {
       data[key] = value || fallback;
     }
   }
+  return data;
 }
 /**
  *
@@ -249,14 +250,15 @@ function getSysConfigs() {
   const opt = [
     ["acme_dir", ACME_DIR, '/usr/share/acme'],
     ["jitsi_domain", `jit.+`],
-    ["nsupdate_key", NSUPDATE_KEY, '/usr/share/acme'],
-    ["domain_desc", DRUMEE_DESCRIPTION, '/usr/share/acme'],
-    ["admin_email", ADMIN_EMAIL, '/usr/share/acme'],
-    ["acme_email_account", ACME_EMAIL_ACCOUNT, '/usr/share/acme'],
-    ["public_ip4", PUBLIC_IP4, '/usr/share/acme'],
-    ["public_ip6", PUBLIC_IP6, '/usr/share/acme'],
-    ["storage_backup", STORAGE_BACKUP, '/usr/share/acme'],
-    ["db_backup", DB_BACKUP, '/usr/share/acme'],
+    ["domain_name", domain_name],
+    ["nsupdate_key", NSUPDATE_KEY, '/etc/bind/keys/update.key'],
+    ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],
+    ["admin_email", ADMIN_EMAIL, ''],
+    ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
+    ["public_ip4", PUBLIC_IP4, ''],
+    ["public_ip6", PUBLIC_IP6, ''],
+    ["storage_backup", STORAGE_BACKUP, ''],
+    ["db_backup", DB_BACKUP, ''],
     ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
     ["max_body_size", MAX_BODY_SIZE, '10G'],
   ]

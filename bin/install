@@ -6,6 +6,7 @@ script_dir=$(dirname $(readlink -f $0))
 
 export infra_helper=$(dirname $script_dir)
 
+$infra_helper/bin/init-mail
 
 # Write configs 
 components=$(debconf-show drumee-infra | grep components | sed -e "s/ //g" | sed -E "s/^.+://")
@@ -18,7 +19,6 @@ fi
 
 source /etc/drumee/drumee.sh
 
-$infra_helper/bin/init-mail
 
 if [ -d /etc/cron.d/drumee ]; then 
   crontab /etc/cron.d/drumee

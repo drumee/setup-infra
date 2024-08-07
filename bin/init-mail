@@ -1,6 +1,10 @@
 #!/bin/bash
-echo "Configuring name..."
+if [ "$DRUMEE_DOMAIN_NAME" = "" ]; then
+  echo "Domain name was not defined"
+  exit 1
+fi
 
+echo "Configuring DKIM for domain $DRUMEE_DOMAIN_NAME"
 set -e
 
 dkim_dir=/etc/opendkim/keys/$DRUMEE_DOMAIN_NAME
