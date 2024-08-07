@@ -376,7 +376,6 @@ function writeInfraConf(data) {
     `${drumee}/conf.d/myDrumee.json`,
     `${drumee}/conf.d/conference.json`,
     `${drumee}/conf.d/drumee.json`,
-    `${drumee}/conf.d/exchange.json`,
     `${drumee}/conf.d/myDrumee.json`,
 
     `${infra}/mfs.conf`,
