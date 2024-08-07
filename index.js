@@ -222,9 +222,9 @@ function makeData(opt) {
     data.own_certs_dir = data.certs_dir;
   }
   for (let row of opt) {
-    let [ key, value, fallback ] = row;
+    let [key, value, fallback] = row;
     if (!data[key]) {
-      if(/.+\+$/.test(value)){
+      if (/.+\+$/.test(value)) {
         value = value.replace(/\+$/, data[key]);
       }
       data[key] = value || fallback;
@@ -530,17 +530,22 @@ function configure() {
     const isPrivate = await privateIp();
     let os = require("os");
     let interfaces = os.networkInterfaces();
+    let public_address;
     for (let name in interfaces) {
       for (let dev of interfaces[name]) {
-        if (dev.family == 'IPv4' && !dev.internal) {
+        if (dev.family == 'IPv4') {
           if (isPrivate(dev.address)) {
             data.local_address = dev.address;
             break;
+          }
+          if (!dev.internal) {
+            public_address = dev.address;
           }
         }
       }
       if (data.local_address) break;
     }
+    if (!data.local_address) data.local_address = public_address;
     data = makeConfData(data);
     let func = [];
     if (!ARGV.infra && !ARGV.jitsi) {
