@@ -6,7 +6,7 @@ include "/etc/bind/named.conf.log";
 include "<%= nsupdate_key %>";
 zone "<%= domain %>" {
     type master;
-    file "/etc/bind/db.<%= domain %>";
+    file "/var/lib/bind/<%= domain %>";
     allow-query { any; };
     allow-update { key "update"; };
     allow-transfer { <%= public_ip4 %>; };
