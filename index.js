@@ -384,8 +384,8 @@ function writeInfraConf(data) {
     `${infra}/routes/main.conf`,
     `${infra}/internals/accel.conf`,
     {
-      tpl: `/var/lib/bind/domain.conf`,
-      out: `/var/lib/bind/${domain}`
+      tpl: `var/lib/bind/domain.tpl`,
+      out: `var/lib/bind/${domain}`
     },
     `${bind}/named.conf.local`,
     `${bind}/named.conf.log`,
