@@ -507,7 +507,10 @@ function makeConfData(data) {
   };
   if (!data.export_dir) data.export_dir = null;
   if (!data.import_dir) data.import_dir = null;
-  return data
+  if (!data.local_address){
+    data.local_address = data.public_address || "127.0.0.1";
+  } 
+return data
 }
 
 /**
@@ -545,7 +548,6 @@ function configure() {
       }
       if (data.local_address) break;
     }
-    if (!data.local_address) data.local_address = public_address;
     data = makeConfData(data);
     let func = [];
     if (!ARGV.infra && !ARGV.jitsi) {
