@@ -6,25 +6,35 @@
 
 
 location <%= location %>app/ {
-  alias /srv/drumee/runtime/ui/dist/main/app/;
+  alias /srv/drumee/runtime/ui/dist/<%= route %>/app/;
   add_header Cache-Control max-age=31536000;
-  add_header Access-Control-Allow-Origin drumee.io;
+  add_header Access-Control-Allow-Origin <%= domain %>;
   fastcgi_hide_header Set-Cookie;
   break;
 }
 
 # Frontend application assets
 location <%= location %>api/ {
-  alias /srv/drumee/runtime/ui/dist/main/api/;
+  alias /srv/drumee/runtime/ui/dist/<%= route %>/api/;
   add_header Cache-Control max-age=31536000;
-  add_header Access-Control-Allow-Origin drumee.io;
+  add_header Access-Control-Allow-Origin <%= domain %>;
   fastcgi_hide_header Set-Cookie;
   break;
 }
 
+# Frontend application assets
+location <%= location %>plugins/ {
+  alias /srv/drumee/runtime/ui/dist/<%= route %>/plugins/;
+  add_header Cache-Control max-age=31536000;
+  add_header Access-Control-Allow-Origin <%= domain %>;
+  fastcgi_hide_header Set-Cookie;
+  break;
+}
+
+
 # Frontend application templates
 location <%= location %>bb-templates/ {
-  alias  /srv/drumee/runtime/ui/dist/main/bb-templates/;
+  alias  /srv/drumee/runtime/ui/dist/<%= route %>/bb-templates/;
   add_header Cache-Control max-age=31536000;
   add_header Access-Control-Allow-Origin *;
   fastcgi_hide_header Set-Cookie;
@@ -100,7 +110,7 @@ location <%= location %> {
     add_header Pragma public;
     add_header Cache-Control max-age=31536000;
     fastcgi_hide_header Set-Cookie;
-    add_header Access-Control-Allow-Origin drumee.io;
+    add_header Access-Control-Allow-Origin <%= domain %>;
     rewrite /avatar/(.+)$ /-/svc/yp.avatar?id=$1 last;
     break;
   }
@@ -108,7 +118,7 @@ location <%= location %> {
   location ~ (.+)\.(.+)$ {
     fastcgi_hide_header Set-Cookie;
     add_header Cache-Control max-age=31536000;
-    add_header Access-Control-Allow-Origin drumee.io;
+    add_header Access-Control-Allow-Origin <%= domain %>;
     rewrite /somanos/(.+)$ /-/svc/media.raw&p=$1&d=inline;
     break;
   }

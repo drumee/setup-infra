@@ -5,4 +5,4 @@
 # Date     : <%= date %>
 # ------------------------------------------------------------- */
 
-module.exports = require("<%= ecosystem %>")
+module.exports = require("<%= ecosystem %>");
