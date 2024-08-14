@@ -405,6 +405,7 @@ function writeInfraConf(data) {
   data.mail_user = MAIL_USER || 'postfix';
   data.mail_password = uniqueId();
   data.smptd_cache_db = "btree:$";
+  data.endpoint = 'main';
   writeTemplates(data, targets);
 
   writeCredentials("postfix", {
@@ -507,10 +508,10 @@ function makeConfData(data) {
   };
   if (!data.export_dir) data.export_dir = null;
   if (!data.import_dir) data.import_dir = null;
-  if (!data.local_address){
+  if (!data.local_address) {
     data.local_address = data.public_address || "127.0.0.1";
-  } 
-return data
+  }
+  return data
 }
 
 /**
