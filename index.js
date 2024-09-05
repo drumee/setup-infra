@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-// ======================================================
-//
-// ======================================================
 const Template = require("./templates");
 const { writeFileSync } = require(`jsonfile`);
 const { join, dirname } = require("path");
@@ -31,7 +28,7 @@ const {
   NSUPDATE_KEY,
   PUBLIC_IP4,
   PUBLIC_IP6,
-  STORAGE_BACKUP,
+  BACKUP_LOCATION,
 } = process.env;
 
 /**
@@ -257,7 +254,7 @@ function getSysConfigs() {
     ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
     ["public_ip4", PUBLIC_IP4, ''],
     ["public_ip6", PUBLIC_IP6, ''],
-    ["storage_backup", STORAGE_BACKUP, ''],
+    ["backup_location", BACKUP_LOCATION, ''],
     ["db_backup", DB_BACKUP, ''],
     ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
     ["max_body_size", MAX_BODY_SIZE, '10G'],

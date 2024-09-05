@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e
+. /usr/share/debconf/confmodule
+
+echo "Installing Drumee Team Meta Package"
+script_dir=`dirname $(readlink -f $0)`
+. $script_dir/utils/functions
+. $script_dir/utils/prompt.sh
+
+check_installation
+if [ "$RET" = "maiden" ]; then
+  select_installation_mode
+  if [ "$RET" = "menu" ]; then
+    $script_dir/menu-install
+  fi
+  $script_dir/prepare
+else 
+  should_reinstall
+  if [ "$RET" = "remove" ]; then
+    export FORCE_INSTALL=yes
+    service mariadb stop
+    echo rm -rf $DRUMEE_DB_DIR
+    echo rm -rf $DRUMEE_DATA_DIR
+    $script_dir/menu-install
+    $script_dir/prepare
+  else
+    echo updating
+  fi
+done
