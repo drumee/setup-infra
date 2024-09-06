@@ -29,6 +29,7 @@ const {
   PUBLIC_IP4,
   PUBLIC_IP6,
   BACKUP_LOCATION,
+  OWN_CERTS_DIR,
 } = process.env;
 
 /**
@@ -215,8 +216,8 @@ function makeData(opt) {
   data.chroot = Template.chroot();
   data.acme_store = join(data.certs_dir, `${data.domain_name}_ecc`);
   data.ca_server = data.ca_server || data.acme_ssl;
-  if (data.own_ssl && data.certs_dir) {
-    data.own_certs_dir = data.certs_dir;
+  if (OWN_CERTS_DIR) {
+    data.own_certs_dir = OWN_CERTS_DIR;
   }
   for (let row of opt) {
     let [key, value, fallback] = row;
