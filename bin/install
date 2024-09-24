@@ -4,20 +4,21 @@ set -e
 echo "Configuring Drumee Infrastructure"
 script_dir=$(dirname $(readlink -f $0))
 
-export infra_helper=$(dirname $script_dir)
+export base=$(dirname $script_dir)
 
-$infra_helper/bin/init-mail
 
 # Write configs 
-node $infra_helper/index.js
+node $base/index.js
 source /etc/drumee/drumee.sh
 
 if [ -d /etc/cron.d/drumee ]; then 
   crontab /etc/cron.d/drumee
 fi 
 
-source $infra_helper/bin/env
-source $infra_helper/bin/jitsi
+$base/bin/init-mail
+
+source $base/bin/env
+source $base/bin/jitsi
 
 install_jitsi
 
@@ -44,8 +45,8 @@ protect_dir $DRUMEE_SERVER_HOME
 protect_dir $DRUMEE_EXPORT_DIR
 protect_dir $DRUMEE_IMPORT_DIR
 
-$infra_helper/bin/init-named
-$infra_helper/bin/init-acme
+$base/bin/init-named
+$base/bin/init-acme
 
 clean_vendor_files
 setup_dirs
