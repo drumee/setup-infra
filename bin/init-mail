@@ -1,13 +1,13 @@
 #!/bin/bash
-if [ "$DRUMEE_DOMAIN_NAME" = "" ]; then
+if [ "$1" = "" ]; then
   echo "Domain name was not defined"
   exit 1
 fi
 
-echo "Configuring DKIM for domain $DRUMEE_DOMAIN_NAME"
+echo "Configuring DKIM for domain $1"
 set -e
 
-dkim_dir=/etc/opendkim/keys/$DRUMEE_DOMAIN_NAME
+dkim_dir=/etc/opendkim/keys/$1
 mkdir -p $dkim_dir
 cd $dkim_dir
 key_file=private.pem

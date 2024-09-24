@@ -6,6 +6,7 @@ script_dir=$(dirname $(readlink -f $0))
 
 export base=$(dirname $script_dir)
 
+$base/bin/init-mail $DRUMEE_DOMAIN_NAME
 
 # Write configs 
 node $base/index.js
@@ -15,7 +16,7 @@ if [ -d /etc/cron.d/drumee ]; then
   crontab /etc/cron.d/drumee
 fi 
 
-$base/bin/init-mail
+
 
 source $base/bin/env
 source $base/bin/jitsi
