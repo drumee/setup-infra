@@ -9,16 +9,8 @@ export infra_helper=$(dirname $script_dir)
 $infra_helper/bin/init-mail
 
 # Write configs 
-components=$(debconf-show drumee-infra | grep components | sed -e "s/ //g" | sed -E "s/^.+://")
-echo Configurings "$components"
-if [ "$components" == "jitsi" ]; then
-  node $infra_helper/index.js --jitsi
-else
-  node $infra_helper/index.js
-fi
-
+node $infra_helper/index.js
 source /etc/drumee/drumee.sh
-
 
 if [ -d /etc/cron.d/drumee ]; then 
   crontab /etc/cron.d/drumee
@@ -52,8 +44,6 @@ protect_dir $DRUMEE_SERVER_HOME
 protect_dir $DRUMEE_EXPORT_DIR
 protect_dir $DRUMEE_IMPORT_DIR
 
-protect_dir /etc/drumee/credential/ovh "yes" "mkdir"
-
 $infra_helper/bin/init-named
 $infra_helper/bin/init-acme
 
@@ -62,4 +52,5 @@ setup_dirs
 setup_prosody
 write_version
 
+crontab  < /etc/cron.d/drumee
 echo "Drumee infrastructure done !"
