@@ -1,5 +1,5 @@
 //
-// Configs setup by Drumee infra-setup utility
+// Configs setup by Drumee setup-infra utility
 //
 
 include "/etc/bind/named.conf.log";
