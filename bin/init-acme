@@ -15,7 +15,7 @@ function make_certs(){
       sleep 5
     fi
     if [ "$sum" -gt "10" ]; then
-      echo Failed to create certifiicates. Please rune manually
+      echo Failed to create certifiicates. Please run manually
       echo $ACME_DIR/acme.sh --issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate
     fi
     sum=$(expr 1 + $sum)

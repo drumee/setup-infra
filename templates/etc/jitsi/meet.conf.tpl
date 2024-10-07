@@ -1,11 +1,10 @@
-server_name <%= jitsi_domain %>;
+server_name _;
 
 charset utf8;
 
 client_max_body_size 0;
 
-#root /usr/share/jitsi-meet;
-root /srv/drumee/static/images;
+root /usr/share/jitsi-meet;
 
 # ssi on with javascript for multidomain variables in config.js
 ssi on;
@@ -24,30 +23,30 @@ set $prefix "";
 # Opt out of FLoC (deprecated)
 add_header Permissions-Policy "interest-cohort=()";
 
-# location = /config.js {
-#    alias /etc/jitsi/web/config.js;
-# }
+location = /config.js {
+   alias /etc/jitsi/web/config.js;
+}
 
-# location = /interface_config.js {
-#    alias /etc/jitsi/web/interface_config.js;
-# }
+location = /interface_config.js {
+   alias /etc/jitsi/web/interface_config.js;
+}
 
-# location = /external_api.js {
-#    alias /usr/share/jitsi-meet/libs/external_api.min.js;
-# }
+location = /external_api.js {
+   alias /usr/share/jitsi-meet/libs/external_api.min.js;
+}
 
 
 
-# ensure all static content can always be found first
-# location ~ ^/(libs|css|static|images|fonts|lang|sounds|connection_optimization|.well-known)/(.*)$ {
-#    add_header 'Access-Control-Allow-Origin' '*';
-#    alias /usr/share/jitsi-meet/$1/$2;
+ensure all static content can always be found first
+location ~ ^/(libs|css|static|images|fonts|lang|sounds|connection_optimization|.well-known)/(.*)$ {
+   add_header 'Access-Control-Allow-Origin' '*';
+   alias /usr/share/jitsi-meet/$1/$2;
 
     # cache all versioned files
-#    if ($arg_v) {
-#        expires 1y;
-#    }
-# }
+   if ($arg_v) {
+       expires 1y;
+   }
+}
 
 
 # colibri (JVB) websockets
