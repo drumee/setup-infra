@@ -17,6 +17,7 @@ if [ -d /etc/cron.d/drumee ]; then
 fi 
 
 source $base/bin/env
+source $base/bin/prosody
 
 protect_dir $DRUMEE_RUNTIME_DIR "no" "mkdir"
 protect_dir $DRUMEE_DATA_DIR "yes" "mkdir"
@@ -47,7 +48,6 @@ $base/bin/init-acme
 clean_vendor_files
 setup_dirs
 setup_prosody
-write_version
 
 crontab  < /etc/cron.d/drumee
 echo "Drumee infrastructure done !"
