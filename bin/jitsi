@@ -91,35 +91,3 @@ function restart_prosody() {
   fi
 }
 
-#-------------------
-function write_version() {
-  echo Creating versions file
-  mkdir -p /etc/jitsi
-  dest=/etc/jitsi/versions.js
-  echo "module.exports={" >$dest
-  dpkg -l | egrep "ii +jitsi" | awk '{print  "\"", $2, "\"", ":", "\"", $3, "\"", ","}' | sed -E "s/ +//g" >>$dest
-  echo "}" >>$dest
-  echo Versions file created
-}
-
-#-------------------
-function install_jitsi() {
-  # Jitsi package
-  echo Checking jitsi-meet packages
-  installed=$(dpkg -l | egrep "^ii +jitsi-meet ")
-  if [ "$installed" = "" -o "$FORCE_INSTALL" = "yes" ]; then
-    key=/etc/apt/trusted.gpg.d/jitsi-key.gpg
-    if [ ! -f $key ]; then
-      curl -sS https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor | tee j$key >/dev/null 2>&1
-    fi
-
-    source=/etc/apt/sources.list.d/jitsi-stable.list
-    if [ ! -f $jitsi_source ]; then
-      echo "deb https://download.jitsi.org stable/" | tee $source
-      apt update
-    fi
-    DEBIAN_FRONTEND="noninteractive" apt install -y jitsi-meet
-  else
-    echo "Jitsi package alreay installed. Skipped."
-  fi
-}
