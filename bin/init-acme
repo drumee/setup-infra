@@ -6,8 +6,8 @@ function make_certs(){
   sum=0
   dom=$1
   echo Generating "${dom}" cetificates...
-  ./acme.sh 
-  OPTIONS=--issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate
+  OPTIONS="--issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate"
+  ./acme.sh $OPTIONS
   while [ ! -f ${ACME_CERTS_DIR}/${dom}_ecc/fullchain.cer ]; do
     ./acme.sh $OPTIONS
     if [ $? = "0" ]; then
@@ -19,6 +19,7 @@ function make_certs(){
     if [ "$sum" -gt "10" ]; then
       echo Failed to create certifiicates. Please run manually
       echo $ACME_DIR/acme.sh  $OPTIONS
+      return
     fi
     sum=$(expr 1 + $sum)
   done
