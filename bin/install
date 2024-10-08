@@ -21,7 +21,10 @@ fi
 source $base/bin/env
 source $base/bin/jitsi
 
-install_jitsi
+debconf-set-selections $base/bin/preset-jitsi
+if [ "$SKIP_JITSI" = "" ];  then
+  install_jitsi
+fi
 
 protect_dir $DRUMEE_RUNTIME_DIR "no" "mkdir"
 protect_dir $DRUMEE_DATA_DIR "yes" "mkdir"

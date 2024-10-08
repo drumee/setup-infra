@@ -22,7 +22,7 @@ server {
 	listen [::]:443 ssl;	
 	#
 	root <%= server_dir %>;
-	server_name _; 
+	server_name <%= domain %>; 
 	client_max_body_size <%= max_body_size %>;
 	include /etc/drumee/ssl/main.conf;
 	include /etc/drumee/infrastructure/routes/*.conf;

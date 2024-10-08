@@ -107,7 +107,7 @@ function install_jitsi() {
   # Jitsi package
   echo Checking jitsi-meet packages
   installed=$(dpkg -l | egrep "^ii +jitsi-meet ")
-  if [ "$installed" = "" ]; then
+  if [ "$installed" = "" -o "$FORCE_INSTALL" = "yes" ]; then
     key=/etc/apt/trusted.gpg.d/jitsi-key.gpg
     if [ ! -f $key ]; then
       curl -sS https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor | tee j$key >/dev/null 2>&1

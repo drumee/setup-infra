@@ -21,7 +21,7 @@ server {
 server {
 	listen 443 ssl http2;
 	listen [::]:443 ssl http2;
-	server_name *.<%= jitsi_domain %>; 
+	server_name <%= jitsi_domain %>; 
 	include /etc/jitsi/ssl.conf;
 	include /etc/jitsi/meet.conf;
 }

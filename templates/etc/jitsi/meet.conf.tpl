@@ -10,7 +10,7 @@ root /usr/share/jitsi-meet;
 ssi on;
 ssi_types application/x-javascript application/javascript;
 
-# index index.html index.htm;
+index index.html index.htm;
 error_page 404 /static/404.html;
 
 # Security headers
@@ -37,7 +37,7 @@ location = /external_api.js {
 
 
 
-ensure all static content can always be found first
+# ensure all static content can always be found first
 location ~ ^/(libs|css|static|images|fonts|lang|sounds|connection_optimization|.well-known)/(.*)$ {
    add_header 'Access-Control-Allow-Origin' '*';
    alias /usr/share/jitsi-meet/$1/$2;
