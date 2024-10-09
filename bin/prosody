@@ -80,7 +80,7 @@ function setup_prosody() {
       echo "${pub_ip} ${JITSI_DOMAIN}" >>/etc/hosts
     fi
   fi
-  echo Subscribing roster command for focus."${JITSI_DOMAIN}" focus@${host}
+  echo prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${host}"
   #prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
   prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${host}"
   echo Prosody creadentials done
