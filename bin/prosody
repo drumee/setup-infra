@@ -43,16 +43,32 @@ function addUser() {
   prosodyctl register ${user} ${host} $secret
 }
 
+#-------------------
+# Sometime service prosody restart is not working
+function restart_prosody() {
+  if [ -f /var/run/prosody/prosody.pid ]; then
+    set +e
+    ppid=$(cat /var/run/prosody/prosody.pid)
+    echo "Prosody PID =$ppid"
+    if [ "$ppid" != "" ]; then
+      kill $ppid;
+      sleep 3
+      service prosody start
+    else
+      service prosody restart
+    fi
+  else
+    service prosody restart
+  fi
+}
 
 #-------------------
 function setup_prosody() {
   echo Configuring prosody creadentials
 
   # Ensure prosody start before using prosodyctl
-  service prosody restart
+  restart_prosody
   host="auth.${JITSI_DOMAIN}"
-  #jic_pw=$(grep password /etc/jitsi/jicofo/jicofo.conf | awk '{print $3}' | sed -e s/\"//g)
-  #jvb_pw=$(grep PASSWORD /etc/jitsi/videobridge/jvb.conf | awk '{print $3}' | sed -e s/\"//g)
   addUser focus $JICOFO_PASSWORD $host
   addUser jvb $JVB_PASSWORD $host
   addUser $APP_ID $APP_PASSWORD $JITSI_DOMAIN
@@ -65,8 +81,8 @@ function setup_prosody() {
     fi
   fi
   echo Subscribing roster command for focus."${JITSI_DOMAIN}" focus@${host}
-  prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
-  #echo prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
+  #prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
+  prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${host}"
   echo Prosody creadentials done
 }
 
@@ -82,12 +98,4 @@ function clean_vendor_files() {
   rm -rf /etc/prosody/certs/*
 }
 
-#-------------------
-function restart_prosody() {
-  if [ -f /var/run/prosody/prosody.pid ]; then
-    set +e
-    ppid=$(cat /var/run/prosody/prosody.pid)
-    echo "Prosody PID =$ppid"
-  fi
-}
 
