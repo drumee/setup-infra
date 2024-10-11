@@ -4,8 +4,9 @@ set -e
 echo "Configuring Drumee Infrastructure"
 script_dir=$(dirname $(readlink -f $0))
 
-export base=$(dirname $script_dir)
+clean_vendor_files
 
+export base=$(dirname $script_dir)
 $base/bin/init-mail $DRUMEE_DOMAIN_NAME
 
 # Write configs 
@@ -45,7 +46,6 @@ protect_dir $DRUMEE_IMPORT_DIR
 $base/bin/init-named
 $base/bin/init-acme
 
-clean_vendor_files
 setup_dirs
 setup_prosody
 

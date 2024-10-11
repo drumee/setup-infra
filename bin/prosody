@@ -96,6 +96,7 @@ function clean_vendor_files() {
   rm -f /etc/prosody/conf.avail/jaas.cfg.lua
   rm -f /etc/prosody/conf.avail/jitsi.meet.cfg.lua
   rm -rf /etc/prosody/certs/*
+  rm -rf /var/lib/prosody/*jitsi.meet.*
 }
 
 
