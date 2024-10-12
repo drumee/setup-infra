@@ -68,9 +68,9 @@ function setup_prosody() {
 
   # Ensure prosody start before using prosodyctl
   restart_prosody
-  host="auth.${JITSI_DOMAIN}"
-  addUser focus $JICOFO_PASSWORD $host
-  addUser jvb $JVB_PASSWORD $host
+  auth_host="auth.${JITSI_DOMAIN}"
+  addUser focus $JICOFO_PASSWORD $auth_host
+  addUser jvb $JVB_PASSWORD $auth_host
   addUser $APP_ID $APP_PASSWORD $JITSI_DOMAIN
 
   pub_ip=$(grep public-address /etc/jitsi/videobridge/jvb.conf | awk '{print $3}' | sed -e s/\"//g)
@@ -80,9 +80,8 @@ function setup_prosody() {
       echo "${pub_ip} ${JITSI_DOMAIN}" >>/etc/hosts
     fi
   fi
-  echo prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${host}"
-  #prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
-  prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${host}"
+  echo prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${auth_host}"
+  prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${auth_host}"
   echo Prosody creadentials done
 }
 
