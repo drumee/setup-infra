@@ -4,7 +4,9 @@ charset utf8;
 
 client_max_body_size 0;
 
-root /usr/share/jitsi-meet;
+# Disable direct access to jitsi UI
+# root /usr/share/jitsi-meet;
+root <%= static_dir %>;
 
 # ssi on with javascript for multidomain variables in config.js
 ssi on;
