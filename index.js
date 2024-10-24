@@ -227,7 +227,7 @@ function makeData(opt) {
       if (/.+\+$/.test(value)) {
         value = value.replace(/\+$/, data[key]);
       }
-      data[key] = value || fallback;
+      data[key] = value.trim() || fallback;
     }
   }
   return data;
