@@ -30,7 +30,7 @@ export DRUMEE_SERVER_NODE=<%= runtime_dir %>/dist/main/node_modules
 export DRUMEE_STATIC_DIR=<%= static_dir %>
 export DRUMEE_SYSTEM_GROUP=<%= system_group %>
 export DRUMEE_SYSTEM_USER=<%= system_user %>
-export DRUMEE_TMP_DIR=<%= runtime_dir %>/tmp
+export DRUMEE_TMP_DIR=<%= data_dir %>/tmp
 export DRUMEE_UI_HOME=<%= runtime_dir %>/ui
 export DRUMEE_STORAGE_BACKUP=<%= storage_backup %>
 export DRUMEE_DB_BACKUP=<%= db_backup %>
