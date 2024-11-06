@@ -230,6 +230,11 @@ function makeData(opt) {
       data[key] = value.trim() || fallback;
     }
   }
+
+  if(data.public_ip4){
+    data.reverse_ip4 = data.public_ip4.split('.').reverse().join('.');
+  }
+
   return data;
 }
 /**
@@ -401,6 +406,12 @@ function writeInfraConf(data) {
     `${mariadb}/50-server.cnf`,
   ];
 
+  if(data.reverse_ip4){
+    targets.push({
+      tpl: `var/lib/bind/reverse.tpl`,
+      out: `var/lib/bind/${data.public_ip4}`
+    })
+  }
   data.dkim_key = getDkim(dkim);
   data.mail_user = MAIL_USER || 'postfix';
   data.mail_password = uniqueId();
@@ -534,7 +545,6 @@ function configure() {
     const isPrivate = await privateIp();
     let os = require("os");
     let interfaces = os.networkInterfaces();
-    let public_address;
     for (let name in interfaces) {
       for (let dev of interfaces[name]) {
         if (dev.family == 'IPv4') {

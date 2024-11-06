@@ -11,3 +11,11 @@ zone "<%= domain %>" {
     allow-update { key "update"; };
     allow-transfer { <%= public_ip4 %>; };
 };
+
+<% if (typeof(reverse_ip4) !== "undefined" && reverse_ip4 != "" ) { %>
+zone "<%= reverse_ip4 %>" {
+    type master;
+    file "/var/lib/bind/<%= public_ip4 %>";
+    allow-query { any; };
+};
+<% } %>
