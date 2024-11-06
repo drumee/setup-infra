@@ -406,6 +406,7 @@ function writeInfraConf(data) {
     `${etc}/mailname`,
     `${etc}/opendkim/KeyTable`,
     `${mariadb}/50-server.cnf`,
+    `${mariadb}/50-client.cnf`,
   ];
 
   if (data.reverse_ip4) {
@@ -446,7 +447,10 @@ function writeInfraConf(data) {
     }
   })
 
-  copyConfigs(['etc/postfix/master.cf', 'etc/cron.d/drumee'])
+  copyConfigs([
+    'etc/postfix/master.cf', 
+    'etc/cron.d/drumee',
+  ])
 }
 
 /**
