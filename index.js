@@ -223,17 +223,17 @@ function makeData(opt) {
   }
   for (let row of opt) {
     let [key, value, fallback] = row;
+    if (!value) value = fallback;
+    if (!value) continue;
     if (!data[key]) {
       if (/.+\+$/.test(value)) {
         value = value.replace(/\+$/, data[key]);
       }
-      if(value){
-        data[key] = value.trim() || fallback;
-      }
+      data[key] = value.trim() || fallback;
     }
   }
 
-  if(data.public_ip4){
+  if (data.public_ip4) {
     data.reverse_ip4 = data.public_ip4.split('.').reverse().join('.');
   }
 
@@ -408,7 +408,7 @@ function writeInfraConf(data) {
     `${mariadb}/50-server.cnf`,
   ];
 
-  if(data.reverse_ip4){
+  if (data.reverse_ip4) {
     targets.push({
       tpl: `var/lib/bind/reverse.tpl`,
       out: `var/lib/bind/${data.public_ip4}`
