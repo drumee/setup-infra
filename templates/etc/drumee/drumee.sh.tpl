@@ -33,7 +33,7 @@ export DRUMEE_SYSTEM_USER=<%= system_user %>
 export DRUMEE_TMP_DIR=<%= data_dir %>/tmp
 export DRUMEE_UI_HOME=<%= runtime_dir %>/ui
 export DRUMEE_STORAGE_BACKUP=<%= storage_backup %>
-export DRUMEE_DB_BACKUP=<%= db_backup %>
+export DRUMEE_DB_BACKUP=<%= storage_backup %>/db
 export JITSI_DOMAIN=<%= jitsi_domain %>
 export OWN_CERTS_DIR=<%= own_certs_dir %>
 export PUBLIC_UI_ROOT=<%= public_ui_root %>
