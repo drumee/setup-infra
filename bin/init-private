@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+source /etc/drumee/drumee.sh
+
+echo "Configuring private domain name..."
+
+if [ "$DRUMEE_PRIVATE_DOMAIN" = "" ]; then
+  if [ "$DRUMEE_DOMAIN_NAME" = "" ]; then
+    export DRUMEE_PRIVATE_DOMAIN=drumee.local
+  else
+    echo "Private domain name not found. Will run only on public mode."
+    exit 0
+  fi
+fi
+
+mydomain=$DRUMEE_PRIVATE_DOMAIN
+outdir=${CERTS_DIR}/${mydomain}_ecc
+
+key=${outdir}/${mydomain}.key
+csr=${outdir}/${mydomain}.csr
+cer=${outdir}/${mydomain}.cer
+
+mkir -p $outdir
+
+C=$(locale --all | grep utf8 | tail -1 | sed  -E "s/^(.+_)|(\..+)$//g")
+if [ "$C" = "" ]; then
+  C=XX
+fi
+
+openssl genpkey -algorithm RSA -out $key
+
+openssl req -new -key $key -out $csr -subj "/C=${C}/ST= /L=Local Domain /O=${DRUMEE_DESCRIPTION} /OU=${DRUMEE_DESCRIPTION} /CN=*.${mydomain} /emailAddress=${ADMIN_EMAIL}"
+
+openssl x509 -req -in $csr -signkey $key -out $cer
+
+openssl x509 -in $cer -noout -text
+
+cp $cer /etc/ssl/certs/
+
+exit 0

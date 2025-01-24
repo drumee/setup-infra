@@ -23,7 +23,7 @@ options {
 
     // allow recursion for trusted clients only.
     recursion yes;
-    allow-query { localhost; <%= public_ip4 %>; };
+    allow-query { <%= allow_recursion %> };
 
 	// enable the query log
 	querylog yes;

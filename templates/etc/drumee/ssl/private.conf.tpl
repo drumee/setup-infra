@@ -4,7 +4,5 @@
 # Date : <%= date %>
 # -------------------------------------------------------------
 
-ssl_certificate_key <%= certs_dir %>/<%= domain %>_ecc/<%= domain %>.key;
-ssl_certificate <%= certs_dir %>/<%= domain %>_ecc/fullchain.cer;
-ssl_trusted_certificate <%= certs_dir %>/<%= domain %>_ecc/ca.cer;
-
+ssl_certificate_key <%= certs_dir %>/<%= private_domain %>_ecc/<%= private_domain %>.key;
+ssl_trusted_certificate <%= certs_dir %>/<%= private_domain %>_ecc/<%= private_domain %>.cer;

@@ -4,7 +4,7 @@
 # Date : <%= date %>
 # -------------------------------------------------------------
 
-export ACME_CERTS_DIR=<%= certs_dir %>
+export CERTS_DIR=<%= certs_dir %>
 export ACME_DIR=<%= acme_dir %>
 export ACME_DNS=<%= acme_dns %>
 export ACME_EMAIL_ACCOUNT=<%= acme_email_account %>

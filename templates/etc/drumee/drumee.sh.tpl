@@ -4,20 +4,26 @@
 # Date : <%= date %>
 # -------------------------------------------------------------
 
+export CERTS_DIR=<%= certs_dir %>
+
+<% if (typeof(public_domain) !== "undefined" && public_domain != "" ) { %>
+
 export ACME_CA_SERVER=<%= ca_server %>
-export ACME_CERTS_DIR=<%= certs_dir %>
 export ACME_DIR=<%= acme_dir %>
 export ACME_EMAIL_ACCOUNT=<%= acme_email_account %>
-export ACME_STORE=<%= certs_dir %>/<%= domain_name %>_ecc
+export ACME_STORE=<%= certs_dir %>/<%= public_domain %>_ecc
+export NSUPDATE_SERVER=ns1.<%= public_domain %>
+export NSUPDATE_ZONE=<%= public_domain %>
+export DRUMEE_PUBLIC_DOMAIN=<%= public_domain %>
+
+<% } %>
+
 export APP_ROUTING_MARK=<%= public_ui_root %>
 export CREDENTIAL_DIR=/etc/drumee/credential
 export NSUPDATE_KEY=<%= nsupdate_key %>
-export NSUPDATE_SERVER=ns1.<%= domain_name %>
-export NSUPDATE_ZONE=<%= domain_name %>
 export DRUMEE_DB_DIR=<%= db_dir %>
 export DRUMEE_CACHE_DIR=<%= cache_dir %>
 export DRUMEE_DATA_DIR=<%= data_dir %>
-export DRUMEE_DOMAIN_NAME=<%= domain_name %>
 export DRUMEE_EXPORT_DIR=<%= export_dir %>
 export DRUMEE_IMPORT_DIR=<%= import_dir %>
 export DRUMEE_LOG_DIR=<%= log_dir %>
@@ -32,8 +38,8 @@ export DRUMEE_SYSTEM_GROUP=<%= system_group %>
 export DRUMEE_SYSTEM_USER=<%= system_user %>
 export DRUMEE_TMP_DIR=<%= data_dir %>/tmp
 export DRUMEE_UI_HOME=<%= runtime_dir %>/ui
-export DRUMEE_STORAGE_BACKUP=<%= storage_backup %>
-export DRUMEE_DB_BACKUP=<%= storage_backup %>/db
+export DRUMEE_BACKUP_STORAGE=<%= backup_storage %>
+export DRUMEE_DB_BACKUP=<%= backup_storage %>/db
 export JITSI_DOMAIN=<%= jitsi_domain %>
 export OWN_CERTS_DIR=<%= own_certs_dir %>
 export PUBLIC_UI_ROOT=<%= public_ui_root %>

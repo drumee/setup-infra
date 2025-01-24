@@ -11,7 +11,7 @@ function setup_dirs() {
   ca_dir=/usr/local/share/ca-certificates
   mkdir -p $ca_dir
 
-  cert_file="${ACME_CERTS_DIR}/${JITSI_DOMAIN}_ecc/${JITSI_DOMAIN}"
+  cert_file="${CERTS_DIR}/${JITSI_DOMAIN}_ecc/${JITSI_DOMAIN}"
   target="${ca_dir}/auth.${JITSI_DOMAIN}"
 
   if [ -f "${cert_file}.cer" ]; then

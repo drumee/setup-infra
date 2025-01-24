@@ -1,9 +1,11 @@
-_ = require("lodash");
-Shell = require("shelljs");
-const { mkdirSync, existsSync, writeSync, openSync, close, readFileSync } = require("fs");
+const {
+  mkdirSync, existsSync, writeSync, openSync, close, readFileSync
+} = require("fs");
 const { env } = process;
+const { template, isEmpty } = require("lodash");
+
 const { resolve, join, dirname } = require("path");
-const ARGV = require('minimist')(process.argv.slice(2));
+const { args } = require('./utils')
 
 /**
  * 
@@ -11,7 +13,7 @@ const ARGV = require('minimist')(process.argv.slice(2));
  * @returns 
  */
 function chroot(p) {
-  let root = ARGV.chroot || env.dev_root;
+  let root = args.outdir || args.chroot || env.DRUMEE_CONF_BASE;
   if (root) {
     if (p) return join(root, p);
     return join(root);
@@ -25,7 +27,6 @@ function chroot(p) {
  */
 function makedir(dname) {
   if (!existsSync(dname)) {
-    //console.log(`Should make dir ${dname}`);
     mkdirSync(dname, { recursive: true });
   }
 };
@@ -53,8 +54,9 @@ function render(data, name, parse) {
   }
   //console.log("RENDERING", __dirname, name, tpl);
   let str = readFileSync(tpl);
+
   try {
-    let res = _.template(String(str).toString())(data);
+    let res = template(String(str).toString())(data);
     if (parse && typeof res === "string") {
       return JSON.parse(res);
     }
@@ -79,14 +81,18 @@ function write(data, fn, tpl_name, chr) {
   let d = new Date();
   data.date = d.toISOString().split('T')[0];
 
-  console.log("Writing config into " + filename);
   let fd = openSync(filename, "w+");
-  if (ARGV.readonly) {
-    console.log("Readonly", fn, tpl_name);
+  if (args.readonly) {
+    console.log(`READ ONLY using template ${tpl_name}, fn=${fn}`);
+    if (args.readonly > 1) {
+      console.log(data);
+      console.log("END OF FILE", filename);
+    }
     return
   }
 
-  if (_.isEmpty(tpl_name)) {
+  console.log("Writing config into " + filename);
+  if (isEmpty(tpl_name)) {
     writeSync(fd, data);
   } else {
     writeSync(fd, render(data, tpl_name));
@@ -98,5 +104,6 @@ function write(data, fn, tpl_name, chr) {
 module.exports = {
   write,
   chroot,
-  render
+  render,
+  makedir
 };

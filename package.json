@@ -17,12 +17,11 @@
   "author": "Somanos Sar <somanos@drumee.com>",
   "license": "AGPL V3",
   "dependencies": {
-    "@drumee/setup-infra": "^1.0.0",
     "@drumee/server-essentials": "^1.0.4",
+    "argparse": "^2.0.1",
     "crypto": "^1.0.1",
     "jsonfile": "^5.0.0",
     "lodash": "^4.17.21",
-    "minimist": "^1.2.8",
     "ovh": "^2.0.3",
     "private-ip": "^3.0.1",
     "shelljs": "^0.8.5",
