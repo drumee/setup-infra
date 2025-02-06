@@ -14,7 +14,7 @@ export ACME_EMAIL_ACCOUNT=<%= acme_email_account %>
 export ACME_STORE=<%= certs_dir %>/<%= public_domain %>_ecc
 export NSUPDATE_SERVER=ns1.<%= public_domain %>
 export NSUPDATE_ZONE=<%= public_domain %>
-export DRUMEE_PUBLIC_DOMAIN=<%= public_domain %>
+export PUBLIC_DOMAIN=<%= public_domain %>
 
 <% } %>
 

@@ -26,6 +26,7 @@ const {
   DRUMEE_DATA_DIR,
   DRUMEE_DB_DIR,
   DRUMEE_DESCRIPTION,
+  DRUMEE_DOMAIN_NAME,
   MAIL_USER,
   MAX_BODY_SIZE,
   NSUPDATE_KEY,
@@ -260,7 +261,7 @@ function makeData(opt) {
     data.allow_recursion = data.allow_recursion + ` ${data.private_ip4};`;
   }
 
-  data.domain_name = data.public_domain || data.private_domain;
+  data.domain_name = data.public_domain || DRUMEE_DOMAIN_NAME || data.private_domain;
   data.jitsi_domain = `jit.${data.domain_name}`;
 
   /** Jitsi settings, fallback to private if no public_domain */
