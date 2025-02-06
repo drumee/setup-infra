@@ -3,8 +3,8 @@ if [ "$DRUMEE_DOMAIN_NAME" = "" ]; then
   echo "Public domain name not found. Will run only on private mode."
   exit 0
 fi
-if [ "$OWN_CERTS_DIR" = "" ]; then
-  echo "OWN_CERTS_DIR was defined. This means you will have to complete settings later."
+if [ "$OWN_CERTS_DIR" != "" ]; then
+  echo "OWN_CERTS_DIR was set to $OWN_CERTS_DIR. This means you will have to complete settings later."
   exit 0
 fi
 

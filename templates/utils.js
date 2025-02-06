@@ -85,14 +85,13 @@ const args = parser.parseArgs();
  */
 function hasExistingSettings(envfile = '/etc/drumee/drumee.json') {
   if (!existsSync(envfile)) return false;
-  const { domain_name } = readFileSync(envfile)
+  const { domain_name } = readFileSync(envfile);
+  if (!domain_name) return false;
   const override = process.env.FORCE_INSTALL || args.force_install;
   if (override) {
     console.log(
-      `There is already a Drumee instance installed on this server\n`,
-      `domain name = ${domain_name}\n`,
-      `You have chosen to force reinstllation\n`,
-      `ALL EXISTING DATA WILL BE LOST\n`,
+      `There is already a Drumee instance installed on this server but you selected FORCE_INSTALL\n`,
+      `ALL EXISTING DATA related to ${domain_name} WILL BE LOST\n`,
     );
     return false;
   }
