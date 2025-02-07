@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-// ======================================================
-//
-// ======================================================
 const Template = require("./templates");
 const { writeFileSync } = require(`jsonfile`);
 const { join, dirname } = require("path");
