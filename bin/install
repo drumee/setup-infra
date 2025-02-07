@@ -10,6 +10,12 @@ $base/bin/init-mail $DRUMEE_DOMAIN_NAME
 
 # Write configs 
 node $base/index.js
+
+if [ ! -e /etc/drumee/drumee.sh ]; then 
+  echo "Setup has failed"
+  exit 1
+fi 
+
 source /etc/drumee/drumee.sh
 
 if [ -d /etc/cron.d/drumee ]; then 

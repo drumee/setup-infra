@@ -32,11 +32,12 @@ const {
   NSUPDATE_KEY,
   PRIVATE_DOMAIN,
   PRIVATE_IP4,
-  PUBLIC_DOMAIN,
   PUBLIC_IP4,
   PUBLIC_IP6,
   STORAGE_BACKUP,
 } = process.env;
+
+const PUBLIC_DOMAIN = DRUMEE_DOMAIN_NAME;
 
 /**
  *
@@ -163,7 +164,6 @@ function writeEcoSystem(data) {
     mode: "dist",
     route: "main",
   };
-  console.log("AAA:167", data)
   let main = worker({
     ...data,
     ...ports,
@@ -586,8 +586,10 @@ function writeJitsiConf(data) {
  *
  */
 function makeConfData(data) {
+  const endpoint_name = "main";
   data = {
     ...data,
+    endpoint_name,
     turn_sercret: randomString(),
     prosody_plugins: "/usr/share/jitsi-meet/prosody-plugins/",
     xmpp_password: randomString(),
@@ -597,7 +599,7 @@ function makeConfData(data) {
     jvb_password: randomString(),
     app_id: randomString(),
     app_password: randomString(),
-    ui_base: join(data.ui_base, 'dist', 'main'),
+    ui_base: join(data.ui_base, 'dist', endpoint_name),
     location: '/-/',
     pushPort: 23000,
     restPort: 24000,

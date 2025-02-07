@@ -3,7 +3,6 @@
 source /etc/drumee/drumee.sh
 source /etc/prosody/defaults/credentials.sh
 
-set +e
 #-------------------
 function setup_dirs() {
   echo Configuring directories permissions
