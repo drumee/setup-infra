@@ -136,11 +136,15 @@ function writeTemplates(data, targets) {
     return
   }
   for (let target of targets) {
-    if (isString(target)) {
-      Template.write(data, target, target);
-    } else {
-      let { out, tpl } = target;
-      Template.write(data, out, tpl);
+    try{
+      if (isString(target)) {
+        Template.write(data, target, target);
+      } else {
+        let { out, tpl } = target;
+        Template.write(data, out, tpl);
+      }  
+    }catch(e){
+      console.error("Failed to write configs for", target)
     }
   }
 }
@@ -232,8 +236,15 @@ function makeData(opt) {
 
   if (data.public_ip4) {
     data.reverse_ip4 = data.public_ip4.split('.').reverse().join('.');
+  }else{
+    data.reverse_ip4 = ""
   }
-
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
+  }
+  if(!data.storage_backup){
+    data.storage_backup = ""
+  }
   return data;
 }
 /**
