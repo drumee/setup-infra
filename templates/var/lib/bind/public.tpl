@@ -15,6 +15,8 @@ $ORIGIN <%= domain %>.
 <% if (typeof(public_ip4) !== "undefined" && public_ip4 != "" ) { %>
 ; A records
 @		60	IN	A	    <%= public_ip4 %>
+ns1		60	IN	A	    <%= public_ip4 %>
+ns2		60	IN	A	    <%= public_ip4 %>
 smtp	60	IN	A	    <%= public_ip4 %>
 jit		60	IN	A	    <%= public_ip4 %>
 *		60	IN	A	    <%= public_ip4 %>
@@ -23,6 +25,8 @@ jit		60	IN	A	    <%= public_ip4 %>
 <% if (typeof(public_ip6) !== "undefined" && public_ip6 != "" ) { %>
 ; AAAA records
 @		60	IN	AAAA	<%= public_ip6 %>
+ns1		60	IN	AAAA	<%= public_ip6 %>
+ns2		60	IN	AAAA	<%= public_ip6 %>
 smtp	60	IN	AAAA	<%= public_ip6 %>
 jit		60	IN	AAAA	<%= public_ip6 %>
 *		60	IN	AAAA	<%= public_ip6 %>
