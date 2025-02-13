@@ -5,7 +5,7 @@ charset utf8;
 client_max_body_size 0;
 
 # Disable direct access to jitsi UI
-# root /usr/share/jitsi-meet;
+# root <%= jitsi_root_dir %>;
 root <%= static_dir %>;
 
 # ssi on with javascript for multidomain variables in config.js
@@ -34,7 +34,7 @@ location = /interface_config.js {
 }
 
 location = /external_api.js {
-   alias /usr/share/jitsi-meet/libs/external_api.min.js;
+   alias <%= jitsi_root_dir %>/libs/external_api.min.js;
 }
 
 
@@ -42,7 +42,7 @@ location = /external_api.js {
 # ensure all static content can always be found first
 location ~ ^/(libs|css|static|images|fonts|lang|sounds|connection_optimization|.well-known)/(.*)$ {
    add_header 'Access-Control-Allow-Origin' '*';
-   alias /usr/share/jitsi-meet/$1/$2;
+   alias <%= jitsi_root_dir %>/$1/$2;
 
     # cache all versioned files
    if ($arg_v) {

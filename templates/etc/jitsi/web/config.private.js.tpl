@@ -17,7 +17,7 @@ if (subdomain) {
 config.hosts.muc = 'muc.' + subdomain + '<%= jitsi_private_domain %>';
 config.bosh = '/http-bind';
 
-config.websocket = 'wss://<%= jitsi_private_domain %>:443/' + subdir + 'xmpp-websocket';
+config.websocket = 'wss://<%= jitsi_private_domain %>:<%= public_https_port %>/' + subdir + 'xmpp-websocket';
 
 // Video configuration.
 //

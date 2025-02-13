@@ -13,8 +13,8 @@ stream {
     }
 
     server {
-        listen 443 udp;
-        listen [::]:443 udp;
+        listen <%= public_https_port %> udp;
+        listen [::]:<%= public_https_port %> udp;
 
         # since 1.11.5
         ssl_preread on;

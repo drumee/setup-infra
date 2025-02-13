@@ -10,7 +10,7 @@ unlimited_jids = {
     "jvb@auth.<%= jitsi_public_domain %>"
 }
 
-plugin_paths = { "/usr/share/jitsi-meet/prosody-plugins/", "/prosody-plugins-custom" }
+plugin_paths = { "<%= jitsi_root_dir %>/prosody-plugins/", "/prosody-plugins-custom" }
 
 muc_mapper_domain_base = "<%= jitsi_public_domain %>";
 muc_mapper_domain_prefix = "muc";
@@ -53,8 +53,8 @@ VirtualHost "<%= jitsi_public_domain %>"
 VirtualHost "guest.<%= jitsi_public_domain %>"
     authentication = "anonymous"
     ssl = {
-        key = "/usr/share/acme/certs/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.key";
-        certificate = "/usr/share/acme/certs/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.cer";
+        key = "<%= certs_dir %>/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.key";
+        certificate = "<%= certs_dir %>/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.cer";
     }
     modules_enabled = {
         "bosh";

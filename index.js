@@ -24,10 +24,13 @@ let {
   DRUMEE_DB_DIR,
   DRUMEE_DESCRIPTION,
   DRUMEE_DOMAIN_NAME,
-  PRIVATE_DOMAIN,
+  DRUMEE_HTTP_PORT,
+  DRUMEE_LOCAL_PORT,
+  DRUMEE_HTTPS_PORT,
   MAIL_USER,
   MAX_BODY_SIZE,
   NSUPDATE_KEY,
+  PRIVATE_DOMAIN,
   PRIVATE_IP4,
   PUBLIC_IP4,
   PUBLIC_IP6,
@@ -41,6 +44,9 @@ if (PUBLIC_DOMAIN) {
 }
 
 PRIVATE_DOMAIN = PRIVATE_DOMAIN || 'drumee.local';
+DRUMEE_HTTPS_PORT = DRUMEE_HTTPS_PORT || 443;
+DRUMEE_LOCAL_PORT = DRUMEE_LOCAL_PORT || 8443;
+DRUMEE_HTTP_PORT = DRUMEE_HTTP_PORT || 80;
 
 /**
  *
@@ -239,7 +245,6 @@ function makeData(opt) {
     loadEnvFile(args.env_file, opt)
   }
   data.chroot = Template.chroot();
-  data.acme_store = join(data.certs_dir, `${data.domain_name}_ecc`);
   data.ca_server = data.ca_server || data.acme_ssl;
   if (data.own_ssl && data.certs_dir) {
     data.own_certs_dir = data.certs_dir;
@@ -252,7 +257,11 @@ function makeData(opt) {
       if (/.+\+$/.test(value)) {
         value = value.replace(/\+$/, data[key]);
       }
-      data[key] = value.trim() || fallback;
+      if (isString(value)) {
+        data[key] = value.trim() || fallback;
+      } else {
+        data[key] = value;
+      }
     }
   }
 
@@ -345,11 +354,15 @@ function getSysConfigs() {
     ["data_dir", DRUMEE_DATA_DIR, '/data'],
     ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
     ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],
+    ["jitsi_root_dir", '/usr/share/jitsi-meet'],
     ["max_body_size", MAX_BODY_SIZE, '10G'],
     ["nsupdate_key", NSUPDATE_KEY, nsupdate_key],
     ["private_domain", PRIVATE_DOMAIN],
     ["private_ip4", private_ip4],
+    ["private_port", DRUMEE_LOCAL_PORT],
     ["public_domain", public_domain],
+    ["public_http_port", DRUMEE_HTTP_PORT],
+    ["public_https_port", DRUMEE_HTTPS_PORT],
     ["public_ip4", public_ip4],
     ["public_ip6", public_ip6],
     ["storage_backup", backup_storage], /** Legacy */
@@ -458,7 +471,7 @@ function writeInfraConf(data) {
   const postfix = join(etc, 'postfix',);
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
-  const { public_domain, private_domain } = data;
+  const { public_domain, private_domain, certs_dir } = data;
   let targets = [
 
     // Nginx 
@@ -512,6 +525,10 @@ function writeInfraConf(data) {
     targets.push(
       `${nginx}/sites-enabled/private.conf`,
       `${drumee}/ssl/private.conf`,
+      {
+        tpl: `${drumee}/certs/local.cnf`,
+        out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
+      },
       `${bind}/named.conf.private`,
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
       { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
@@ -563,7 +580,7 @@ function _addConfigsFiles(targets, data, type = 'private') {
   targets.push(
     {
       tpl: `${jitsi}/jicofo/jicofo.${type}.conf`,
-      out:  `${jitsi}/jicofo/jicofo.conf`,
+      out: `${jitsi}/jicofo/jicofo.conf`,
     },
     {
       tpl: `${jitsi}/jicofo/sip-cmmunicator.${type}.properties`,

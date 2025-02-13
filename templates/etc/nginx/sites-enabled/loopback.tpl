@@ -10,7 +10,7 @@
 
 proxy_cache_path <%= cache_dir %>/loopback levels=1:2 keys_zone=loopback_keys_zone:10m max_size=10g inactive=60m;
 server {
-	listen 127.0.0.1:80;
+	listen 127.0.0.1:<%= public_http_port %>;
 	server_name _; 
 	#
 	root <%= server_dir %>;

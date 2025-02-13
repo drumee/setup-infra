@@ -20,16 +20,16 @@
 {{ $ENABLE_XMPP_WEBSOCKET := .Env.ENABLE_XMPP_WEBSOCKET | default "1" | toBool -}}
 {{ $ENABLE_JAAS_COMPONENTS := .Env.ENABLE_JAAS_COMPONENTS | default "0" | toBool -}}
 {{ $ENABLE_RATE_LIMITS := .Env.PROSODY_ENABLE_RATE_LIMITS | default "0" | toBool -}}
-{{ $PUBLIC_URL := .Env.PUBLIC_URL | default "https://localhost:8443" -}}
+{{ $PUBLIC_URL := .Env.PUBLIC_URL | default "https://localhost:<%= local_port %>" -}}
 {{ $PUBLIC_URL_DOMAIN := $PUBLIC_URL | trimPrefix "https://" | trimSuffix "/" -}}
 {{ $TURN_HOST := .Env.TURN_HOST | default "" -}}
 {{ $TURN_HOSTS := splitList "," $TURN_HOST -}}
-{{ $TURN_PORT := .Env.TURN_PORT | default "443" -}}
+{{ $TURN_PORT := .Env.TURN_PORT | default "<%= public_https_port %>" -}}
 {{ $TURN_TRANSPORT := .Env.TURN_TRANSPORT | default "tcp" -}}
 {{ $TURN_TRANSPORTS := splitList "," $TURN_TRANSPORT -}}
 {{ $TURNS_HOST := .Env.TURNS_HOST | default "" -}}
 {{ $TURNS_HOSTS := splitList "," $TURNS_HOST -}}
-{{ $TURNS_PORT := .Env.TURNS_PORT | default "443" -}}
+{{ $TURNS_PORT := .Env.TURNS_PORT | default "<%= public_https_port %>" -}}
 {{ $XMPP_AUTH_DOMAIN := .Env.XMPP_AUTH_DOMAIN | default "auth.meet.jitsi" -}}
 {{ $XMPP_DOMAIN := .Env.XMPP_DOMAIN | default "meet.jitsi" -}}
 {{ $XMPP_GUEST_DOMAIN := .Env.XMPP_GUEST_DOMAIN | default "guest.meet.jitsi" -}}
