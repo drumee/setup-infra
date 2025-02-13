@@ -1,5 +1,5 @@
 $TTL 3D
-$ORIGIN <%= private_reverse_ip4 %>.
+$ORIGIN <%= reverse_private_ip4 %>.
 ;
 @       IN      SOA     ns1.<%= private_domain %>. master.<%= private_domain %>. (
                         <%= serial %>   ; serial, today date + today serial

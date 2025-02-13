@@ -40,7 +40,7 @@ export DRUMEE_TMP_DIR=<%= data_dir %>/tmp
 export DRUMEE_UI_HOME=<%= runtime_dir %>/ui
 export DRUMEE_BACKUP_STORAGE=<%= backup_storage %>
 export DRUMEE_DB_BACKUP=<%= backup_storage %>/db
-export JITSI_DOMAIN=<%= jitsi_domain %>
+export JITSI_DOMAIN=<%= jitsi_public_domain %>
 export OWN_CERTS_DIR=<%= own_certs_dir %>
 export PUBLIC_UI_ROOT=<%= public_ui_root %>
 

@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-// ======================================================
-//
-// ======================================================
 const Template = require("./templates");
 const { writeFileSync, readFileSync: readJson } = require(`jsonfile`);
 const { join, dirname } = require("path");
@@ -17,7 +14,7 @@ const { args, hasExistingSettings } = require('./templates/utils')
 
 const JSON_OPT = { spaces: 2, EOL: "\r\n" };
 
-const {
+let {
   ACME_DIR,
   ACME_EMAIL_ACCOUNT,
   ADMIN_EMAIL,
@@ -27,17 +24,23 @@ const {
   DRUMEE_DB_DIR,
   DRUMEE_DESCRIPTION,
   DRUMEE_DOMAIN_NAME,
+  PRIVATE_DOMAIN,
   MAIL_USER,
   MAX_BODY_SIZE,
   NSUPDATE_KEY,
-  PRIVATE_DOMAIN,
   PRIVATE_IP4,
   PUBLIC_IP4,
   PUBLIC_IP6,
   STORAGE_BACKUP,
 } = process.env;
 
-const PUBLIC_DOMAIN = DRUMEE_DOMAIN_NAME;
+let PUBLIC_DOMAIN = DRUMEE_DOMAIN_NAME;
+
+if (PUBLIC_DOMAIN) {
+  if (!PRIVATE_DOMAIN) PRIVATE_DOMAIN = PUBLIC_DOMAIN.replace(/\.([a-z_\-0-9]{2,})$/, '.local');
+}
+
+PRIVATE_DOMAIN = PRIVATE_DOMAIN || 'drumee.local';
 
 /**
  *
@@ -145,11 +148,15 @@ function writeTemplates(data, targets) {
     return
   }
   for (let target of targets) {
-    if (isString(target)) {
-      Template.write(data, target, target);
-    } else {
-      let { out, tpl } = target;
-      Template.write(data, out, tpl);
+    try {
+      if (isString(target)) {
+        Template.write(data, target, target);
+      } else {
+        let { out, tpl } = target;
+        Template.write(data, out, tpl);
+      }
+    } catch (e) {
+      console.error("Failed to write configs for", target, e)
     }
   }
 }
@@ -251,27 +258,43 @@ function makeData(opt) {
 
   /** Named extra settings */
   data.allow_recursion = 'localhost;';
+
   if (data.public_ip4) {
-    data.reverse_ip4 = data.public_ip4.split('.').reverse().join('.');
-    data.allow_recursion = data.allow_recursion + ` ${data.reverse_ip4};`;
+    let a = data.public_ip4.split('.');
+    a.pop();
+    data.reverse_public_ip4 = a.reverse().join('.');
+  } else {
+    data.reverse_public_ip4 = ""
+  }
+
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
   }
 
   if (data.private_ip4) {
-    data.private_reverse_ip4 = data.private_ip4.split('.').reverse().join('.');
-    data.allow_recursion = data.allow_recursion + ` ${data.private_ip4};`;
+    let a = data.private_ip4.split('.');
+    a.pop();
+    data.reverse_private_ip4 = a.reverse().join('.');
+  } else {
+    data.reverse_private_ip4 = ""
   }
 
-  data.domain_name = data.public_domain || DRUMEE_DOMAIN_NAME || data.private_domain;
-  data.jitsi_domain = `jit.${data.domain_name}`;
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
+  }
 
-  /** Jitsi settings, fallback to private if no public_domain */
+  if (!data.storage_backup) {
+    data.storage_backup = ""
+  }
+
   if (data.public_domain) {
     data.use_email = 1;
-  } else if (data.private_domain) {
-    data.use_email = 0;
   } else {
-    console.log("Required at least a domain name to be defined", data);
-    return null;
+    data.use_email = 0;
+  }
+
+  if (data.private_domain) {
+    data.jitsi_prvate_domain = `jit.${data.private_domain}`;
   }
 
   return data;
@@ -306,14 +329,9 @@ function getSysConfigs() {
   public_domain = args.public_domain || PUBLIC_DOMAIN || public_domain;
   private_domain = args.private_domain || PRIVATE_DOMAIN || private_domain;
 
-  public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
-  public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
-
-  private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
   backup_storage = args.backup_storage || BACKUP_STORAGE || STORAGE_BACKUP || backup_storage;
 
-  let domain_name = public_domain || private_domain;
-  if (!domain_name) {
+  if (!public_domain && !private_domain) {
     console.log("There is no domain name defined for the installation", args);
     exit(0)
   }
@@ -329,7 +347,7 @@ function getSysConfigs() {
     ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],
     ["max_body_size", MAX_BODY_SIZE, '10G'],
     ["nsupdate_key", NSUPDATE_KEY, nsupdate_key],
-    ["private_domain", private_domain],
+    ["private_domain", PRIVATE_DOMAIN],
     ["private_ip4", private_ip4],
     ["public_domain", public_domain],
     ["public_ip4", public_ip4],
@@ -532,6 +550,37 @@ function writeInfraConf(data) {
     'etc/cron.d/drumee',
   ])
 }
+/**
+ * 
+ * @param {*} targets 
+ * @param {*} type 
+ */
+function _addConfigsFiles(targets, data, type = 'private') {
+  const etc = 'etc';
+  const jitsi = join(etc, 'jitsi');
+  const nginx = join(etc, 'nginx');
+  const prosody = join(etc, 'prosody');
+  targets.push(
+    {
+      tpl: `${jitsi}/jicofo/jicofo.${type}.conf`,
+      out:  `${jitsi}/jicofo/jicofo.conf`,
+    },
+    {
+      tpl: `${jitsi}/jicofo/sip-cmmunicator.${type}.properties`,
+      out: `${jitsi}/jicofo/sip-cmmunicator.properties`
+    },
+    `${jitsi}/videobridge/jvb.${type}.conf`,
+    `${jitsi}/meet.${type}.conf`,
+    `${jitsi}/web/config.${type}.js`,
+    `${nginx}/sites-enabled/jitsi.${type}.conf`,
+    `${nginx}/modules-enabled/90-turn-relay.${type}.conf`,
+    {
+      tpl: `${prosody}/conf.d/${type}.cfg.lua`,
+      out: `${prosody}/conf.d/${data.jitsi_public_domain}.cfg.lua`,
+    },
+    `${etc}/turnserver.${type}.conf`,
+  )
+}
 
 /**
  *
@@ -539,45 +588,31 @@ function writeInfraConf(data) {
 function writeJitsiConf(data) {
   const etc = 'etc';
   const jitsi = join(etc, 'jitsi');
-  const nginx = join(etc, 'nginx');
   const prosody = join(etc, 'prosody');
   const drumee = join(etc, 'drumee');
   let targets = [
-    // Jicofo
     `${jitsi}/jicofo/config`,
-    `${jitsi}/jicofo/jicofo.conf`,
     `${jitsi}/jicofo/logging.properties`,
-
-    // Jitsi Video Bridge 
     `${jitsi}/videobridge/config`,
-    `${jitsi}/videobridge/jvb.conf`,
     `${jitsi}/videobridge/logging.properties`,
-
-    // Jitsi meet
-    `${jitsi}/ssl.conf`,
-    `${jitsi}/meet.conf`,
-    `${jitsi}/web/config.js`,
     `${jitsi}/web/interface_config.js`,
     `${jitsi}/web/defaults/ffdhe2048.txt`,
-
-    // Nginx 
-    `${nginx}/sites-enabled/jitsi.conf`,
-    `${nginx}/modules-enabled/90-turn-relay.conf`,
-
-    // Prosody 
-    `${prosody}/prosody.cfg.lua`,
     `${prosody}/defaults/credentials.sh`,
-    {
-      out: `${prosody}/conf.d/${data.jitsi_domain}.cfg.lua`,
-      tpl: `${prosody}/conf.d/vhost.cfg.lua`
-    },
-    // `${prosody}/migrator.cfg.lua`,
-
-    // Turnserver 
-    `${etc}/turnserver.conf`,
-
+    `${prosody}/prosody.cfg.lua`,
     `${drumee}/conf.d/conference.json`,
   ];
+
+  if (data.public_domain) {
+    data.jitsi_public_domain = `jit.${data.public_domain}`;
+    _addConfigsFiles(targets, data, `public`)
+  } else if (data.private_domain) {
+    data.jitsi_private_domain = `jit.${data.private_domain}`;
+    _addConfigsFiles(targets, data, `private`)
+  } else {
+    console.error(" No domain name available!")
+    return
+  }
+
   writeTemplates(data, targets);
 
 }
@@ -606,9 +641,6 @@ function makeConfData(data) {
   };
   if (!data.export_dir) data.export_dir = null;
   if (!data.import_dir) data.import_dir = null;
-  if (!data.private_address) {
-    data.private_address = data.public_address || "127.0.0.1";
-  }
   return data
 }
 
@@ -652,13 +684,14 @@ async function getAddresses(data) {
       }
     }
   }
-  data.private_ip4 = data.private_ip4 || private_ip4;
-  data.private_ip6 = data.private_ip6 || private_ip6;
-  data.local_address = data.private_ip4;
 
-  data.public_ip4 = data.public_ip4 || public_ip4;
-  data.public_ip6 = data.public_ip6 || public_ip6;
+  data.private_ip6 = args.private_ip6 || PRIVATE_IP4 || private_ip6;
+  data.private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
 
+  data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
+  data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
+
+  console.log("AAA:668", data)
   return data;
 }
 /**

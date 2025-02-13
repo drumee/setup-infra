@@ -61,6 +61,12 @@ parser.addArgument("--private-ip4", {
   help: "Private IPV4",
 });
 
+parser.addArgument("--private-ip6", {
+  type: String,
+  defaultValue: null,
+  help: "Private IPV6",
+});
+
 parser.addArgument("--envfile", {
   type: String,
   help: "Data set required to install Drumee",
