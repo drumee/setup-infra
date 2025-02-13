@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-// ======================================================
-//
-// ======================================================
 const Template = require("./templates");
 const { writeFileSync, readFileSync: readJson } = require(`jsonfile`);
 const { join, dirname } = require("path");
@@ -143,11 +140,15 @@ function writeTemplates(data, targets) {
     return
   }
   for (let target of targets) {
-    if (isString(target)) {
-      Template.write(data, target, target);
-    } else {
-      let { out, tpl } = target;
-      Template.write(data, out, tpl);
+    try{
+      if (isString(target)) {
+        Template.write(data, target, target);
+      } else {
+        let { out, tpl } = target;
+        Template.write(data, out, tpl);
+      }  
+    }catch(e){
+      console.error("Failed to write configs for", target)
     }
   }
 }
@@ -252,27 +253,15 @@ function makeData(opt) {
   data.allow_recursion = 'localhost;';
   if (data.public_ip4) {
     data.reverse_ip4 = data.public_ip4.split('.').reverse().join('.');
-    data.allow_recursion = data.allow_recursion + ` ${data.reverse_ip4};`;
+  }else{
+    data.reverse_ip4 = ""
   }
-
-  if (data.private_ip4) {
-    data.private_reverse_ip4 = data.private_ip4.split('.').reverse().join('.');
-    data.allow_recursion = data.allow_recursion + ` ${data.private_ip4};`;
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
   }
-
-  data.domain_name = data.public_domain || data.private_domain;
-  data.jitsi_domain = `jit.${data.domain_name}`;
-
-  /** Jitsi settings, fallback to private if no public_domain */
-  if (data.public_domain) {
-    data.use_email = 1;
-  } else if (data.private_domain) {
-    data.use_email = 0;
-  } else {
-    console.log("Required at least a domain name to be defined", data);
-    return null;
+  if(!data.storage_backup){
+    data.storage_backup = ""
   }
-
   return data;
 }
 
