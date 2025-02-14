@@ -296,14 +296,15 @@ function makeData(opt) {
     data.storage_backup = ""
   }
 
-  if (data.public_domain) {
-    data.use_email = 1;
-  } else {
-    data.use_email = 0;
+  if (data.private_domain) {
+    data.jitsi_private_domain = `jit.${data.private_domain}`;
   }
 
-  if (data.private_domain) {
-    data.jitsi_prvate_domain = `jit.${data.private_domain}`;
+  if (data.public_domain) {
+    data.use_email = 1;
+    data.jitsi_public_domain = `jit.${data.public_domain}`;
+  }else {
+    data.use_email = 0;
   }
 
   return data;
@@ -471,7 +472,8 @@ function writeInfraConf(data) {
   const postfix = join(etc, 'postfix',);
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
-  const { public_domain, private_domain, certs_dir } = data;
+  const { public_domain, private_domain, certs_dir, jitsi_private_domain, jitsi_public_domain } = data;
+  console.log("AAA:668", { public_domain, private_domain, certs_dir, jitsi_private_domain, jitsi_public_domain })
   let targets = [
 
     // Nginx 
@@ -625,10 +627,8 @@ function writeJitsiConf(data) {
   ];
 
   if (data.public_domain) {
-    data.jitsi_public_domain = `jit.${data.public_domain}`;
     _addConfigsFiles(targets, data, `public`)
   } else if (data.private_domain) {
-    data.jitsi_private_domain = `jit.${data.private_domain}`;
     _addConfigsFiles(targets, data, `private`)
   } else {
     console.error(" No domain name available!")
@@ -713,7 +713,6 @@ async function getAddresses(data) {
   data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
   data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
 
-  console.log("AAA:668", data)
   return data;
 }
 /**
