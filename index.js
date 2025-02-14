@@ -599,7 +599,7 @@ function _addConfigsFiles(targets, data, type = 'private') {
     `${etc}/turnserver.${type}.conf`,
     {
       tpl: `${drumee}/conf.d/conference.${type}.json`,
-      out: `${prosody}/conf.d/${domain}.json`,
+      out: `${drumee}/conf.d/${domain}.json`,
     },
 
   )
