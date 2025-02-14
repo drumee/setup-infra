@@ -209,7 +209,6 @@ function getSysConfigs() {
   let data = { ...sysEnv(), domain_name, domain: domain_name };
 
   data.chroot = Template.chroot();
-  data.acme_store = join(data.certs_dir, `${data.domain_name}_ecc`);
   data.ca_server = data.ca_server || data.acme_ssl;
   if (data.own_ssl && data.certs_dir) {
     data.own_certs_dir = data.certs_dir;
@@ -220,8 +219,8 @@ function getSysConfigs() {
   }
 
 
-  if (!data.jitsi_domain) {
-    data.jitsi_domain = `jit.${data.domain_name}`;
+  if (!data.jitsi_public_domain) {
+    data.jitsi_public_domain = `jit.${data.domain_name}`;
   }
 
   if (!data.nsupdate_key) {
@@ -352,7 +351,7 @@ function writeJitsiConf(data) {
     `${prosody}/prosody.cfg.lua`,
     `${prosody}/defaults/credentials.sh`,
     {
-      out: `${prosody}/conf.d/${data.jitsi_domain}.cfg.lua`,
+      out: `${prosody}/conf.d/${data.jitsi_public_domain}.cfg.lua`,
       tpl: `${prosody}/conf.d/vhost.cfg.lua`
     },
     // `${prosody}/migrator.cfg.lua`,
@@ -372,7 +371,7 @@ function writeJitsiConf(data) {
  */
 function makeConfData(data) {
   const routes = join('etc', 'drumee', 'infrastructure', 'routes');
-  //let jitsi_domain = `jit.${data.domain}`;
+  //let jitsi_public_domain = `jit.${data.domain}`;
   data = {
     ...data,
     turn_sercret: randomString(),
@@ -384,7 +383,7 @@ function makeConfData(data) {
     jvb_password: randomString(),
     app_id: randomString(),
     app_password: randomString(),
-    //jitsi_domain,
+    //jitsi_public_domain,
     ui_base: join(data.ui_base, 'dist', 'main'),
     location: '/-/',
     pushPort: 23000,
@@ -419,12 +418,12 @@ function configure() {
       for (let dev of interfaces[name]) {
         if (dev.family == 'IPv4' && !dev.internal) {
           if (isPrivate(dev.address)) {
-            data.local_address = dev.address;
+            data.private_ip4 = dev.address;
             break;
           }
         }
       }
-      if (data.local_address) break;
+      if (data.private_ip4) break;
     }
     //console.log(addr, service);
     data = makeConfData(data);

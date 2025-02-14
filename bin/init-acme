@@ -49,7 +49,7 @@ if [ "$OWN_SSL" != "" ]; then
 fi
 
 if [ "$ACME_DIR" = "" ]; then
-  export ACME_DIR=/usr/share/acme
+  export ACME_DIR=/etc/drumee/certs/acme
 fi
 
 if [ ! -d $ACME_DIR ]; then

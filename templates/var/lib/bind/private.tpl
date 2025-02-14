@@ -40,15 +40,6 @@ www             IN   CNAME  <%= private_domain %>.
 ;
 @               60  IN   MX 10  smtp.<%= private_domain %>.
 
-; TXT records 
-_acme-challenge 60	IN	TXT "acme-challenge"
-@               60	IN	TXT "v=spf1 a ~all"
-@               60	IN	TXT (<%= dkim_key %>)
-;
-;
-; DKIM 
-smtp._domainkey 60  IN  TXT (<%= dkim_key %>)
-dkim._domainkey 60  IN  TXT (<%= dkim_key %>)
 ;
 ;
 ; DMARC 
@@ -56,7 +47,7 @@ _dmarc          60  IN  TXT "v=DMARC1; p=quarantine;  sp=quarantine; aspf=s"
 ;
 ;
 ; Jitsi subdomain
-$ORIGIN <%= jitsi_domain %>.
+$ORIGIN <%= jitsi_prvate_domain %>.
 ;
 <% if (typeof(private_ip4) !== "undefined" && private_ip4 != "" ) { %>
 *		60	IN	A	    <%= private_ip4 %>

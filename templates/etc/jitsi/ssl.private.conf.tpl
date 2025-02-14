@@ -5,9 +5,9 @@ ssl_session_tickets off;
 
 # ssl certs
 
-ssl_certificate <%= certs_dir %>/<%= jitsi_domain %>_ecc/fullchain.cer;
-ssl_certificate_key <%= certs_dir %>/<%= jitsi_domain %>_ecc/<%= jitsi_domain %>.key;
-ssl_trusted_certificate <%= certs_dir %>/<%= jitsi_domain %>_ecc/ca.cer;
+ssl_certificate <%= certs_dir %>/<%= jitsi_private_domain %>_ecc/fullchain.cer;
+ssl_certificate_key <%= certs_dir %>/<%= jitsi_private_domain %>_ecc/<%= jitsi_private_domain %>.key;
+ssl_trusted_certificate <%= certs_dir %>/<%= jitsi_private_domain %>_ecc/ca.cer;
 
 # protocols
 # Mozilla Guideline v5.6, nginx 1.14.2, OpenSSL 1.1.1d, intermediate configuration, no OCSP

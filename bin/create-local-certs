@@ -1,0 +1,17 @@
+#!/bin/bash
+cnf_dir="/etc/drumee/certs/${PRIVATE_DOMAIN}_ecc"
+cnf=$cnf_dir/local.cnf
+if [ ! -f $cnf ]; then
+  echo "Local certificates could not be created. $cnf is issing "
+  exit 1
+fi
+
+cd $cnf_dir
+
+openssl req -new -key ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.csr -config local.cnf
+
+openssl x509 -req -days 365 -in ${PRIVATE_DOMAIN}.csr -signkey ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.cer
+
+cp ${PRIVATE_DOMAIN}.cer /usr/local/share/ca-certificates/${PRIVATE_DOMAIN}.crt
+
+update-ca-certificates

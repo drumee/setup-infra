@@ -1,7 +1,7 @@
 $TTL 3D
-$ORIGIN <%= public_domain %>.
+$ORIGIN <%= domain %>.
 ;
-@       IN      SOA     ns1.<%= public_domain %>. master.<%= public_domain %>. (
+@       IN      SOA     ns1.<%= domain %>. master.<%= domain %>. (
                         <%= serial %>   ; serial, today date + today serial
                         1H              ; refresh, seconds
                         2H              ; retry, seconds
@@ -9,8 +9,8 @@ $ORIGIN <%= public_domain %>.
                         1D )            ; minimum, seconds
 ;
 ;
-@		60	IN  NS      ns1.<%= public_domain %>.
-@		60	IN  NS      ns2.<%= public_domain %>.
+@		60	IN  NS      ns1.<%= domain %>.
+@		60	IN  NS      ns2.<%= domain %>.
 ;
 <% if (typeof(public_ip4) !== "undefined" && public_ip4 != "" ) { %>
 ; A records
@@ -34,11 +34,11 @@ jit		60	IN	AAAA	<%= public_ip6 %>
 ;
 ; CNAME
 ;
-www             IN   CNAME  <%= public_domain %>.
+www             IN   CNAME  <%= domain %>.
 ;
 ; MX records 
 ;
-@               60  IN   MX 10  smtp.<%= public_domain %>.
+@               60  IN   MX 10  smtp.<%= domain %>.
 
 ; TXT records 
 _acme-challenge 60	IN	TXT "acme-challenge"

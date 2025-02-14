@@ -1,11 +1,11 @@
 stream {
     map $ssl_preread_server_name $name {
-        <%= jitsi_domain %> web_backend;
-        turn-jitsi.<%= jitsi_domain %> turn_backend;
+        turn.<%= jitsi_public_domain %> web_backend;
+        turn-jitsi.<%= jitsi_public_domain %> turn_backend;
     }
 
     upstream web_backend {
-        server 127.0.0.1:4444;
+        server 127.0.0.1:3478;
     }
 
     upstream turn_backend {
@@ -13,8 +13,8 @@ stream {
     }
 
     server {
-        listen 443;
-        listen [::]:443;
+        listen <%= public_https_port %> udp;
+        listen [::]:<%= public_https_port %> udp;
 
         # since 1.11.5
         ssl_preread on;

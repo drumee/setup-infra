@@ -3,8 +3,8 @@ var config = {};
 
 if (!config.hasOwnProperty('hosts')) config.hosts = {};
 
-config.hosts.domain = '<%= jitsi_domain %>';
-config.focusUserJid = 'focus@auth.<%= jitsi_domain %>';
+config.hosts.domain = '<%= jitsi_private_domain %>';
+config.focusUserJid = 'focus@auth.<%= jitsi_private_domain %>';
 
 var subdir = '<!--# echo var="subdir" default="" -->';
 var subdomain = "<!--# echo var="subdomain" default="" -->";
@@ -14,10 +14,10 @@ if (subdir.startsWith('<!--')) {
 if (subdomain) {
     subdomain = subdomain.substring(0,subdomain.length-1).split('.').join('_').toLowerCase() + '.';
 }
-config.hosts.muc = 'muc.' + subdomain + '<%= jitsi_domain %>';
+config.hosts.muc = 'muc.' + subdomain + '<%= jitsi_private_domain %>';
 config.bosh = '/http-bind';
 
-config.websocket = 'wss://<%= jitsi_domain %>:443/' + subdir + 'xmpp-websocket';
+config.websocket = 'wss://<%= jitsi_private_domain %>:<%= public_https_port %>/' + subdir + 'xmpp-websocket';
 
 // Video configuration.
 //

@@ -30,4 +30,9 @@ options {
 
 	// disallow zone transfer
 	allow-transfer { none; };
+
+	forwarders {
+    	8.8.8.8;
+    	8.8.4.4;
+	};
 };
