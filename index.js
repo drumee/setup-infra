@@ -478,11 +478,9 @@ function writeInfraConf(data) {
 
     // Drumee 
     `${drumee}/drumee.sh`,
-    `${drumee}/conf.d/conference.json`,
     `${drumee}/conf.d/drumee.json`,
     `${drumee}/conf.d/exchange.json`,
     `${drumee}/conf.d/myDrumee.json`,
-    `${drumee}/conf.d/conference.json`,
     `${drumee}/conf.d/drumee.json`,
     `${drumee}/conf.d/myDrumee.json`,
 
@@ -577,6 +575,9 @@ function _addConfigsFiles(targets, data, type = 'private') {
   const jitsi = join(etc, 'jitsi');
   const nginx = join(etc, 'nginx');
   const prosody = join(etc, 'prosody');
+  const drumee = join(etc, 'drumee');
+
+  const domain = data[`jitsi_${type}_domain`];
   targets.push(
     {
       tpl: `${jitsi}/jicofo/jicofo.${type}.conf`,
@@ -593,9 +594,14 @@ function _addConfigsFiles(targets, data, type = 'private') {
     `${nginx}/modules-enabled/90-turn-relay.${type}.conf`,
     {
       tpl: `${prosody}/conf.d/${type}.cfg.lua`,
-      out: `${prosody}/conf.d/${data.jitsi_public_domain}.cfg.lua`,
+      out: `${prosody}/conf.d/${domain}.cfg.lua`,
     },
     `${etc}/turnserver.${type}.conf`,
+    {
+      tpl: `${drumee}/conf.d/conference.${type}.json`,
+      out: `${prosody}/conf.d/${domain}.json`,
+    },
+
   )
 }
 
@@ -616,7 +622,6 @@ function writeJitsiConf(data) {
     `${jitsi}/web/defaults/ffdhe2048.txt`,
     `${prosody}/defaults/credentials.sh`,
     `${prosody}/prosody.cfg.lua`,
-    `${drumee}/conf.d/conference.json`,
   ];
 
   if (data.public_domain) {
