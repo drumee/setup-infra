@@ -10,8 +10,8 @@ cd $cnf_dir
 
 openssl req -new -key ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.csr -config local.cnf
 
-openssl x509 -req -days 365 -in ${PRIVATE_DOMAIN}.csr -signkey ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.cer
+openssl x509 -req -in ${PRIVATE_DOMAIN}.csr -signkey ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.cer
 
-cp ${PRIVATE_DOMAIN}.cer /usr/local/share/ca-certificates/${PRIVATE_DOMAIN}.crt
+cp ${PRIVATE_DOMAIN}.cer /usr/local/share/ca-certificates/
 
 update-ca-certificates
