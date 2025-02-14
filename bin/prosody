@@ -21,6 +21,8 @@ function setup_dirs() {
     chmod g+r "${cert_file}.key"
     ln -sf "${cert_file}.key" "${target}.key"
   fi
+  
+  update-ca-certificates
 
   mkdir -p $DRUMEE_RUNTIME_DIR/prosody
   chown -R prosody:prosody $DRUMEE_RUNTIME_DIR/prosody
@@ -71,6 +73,14 @@ function setup_prosody() {
   addUser focus $JICOFO_PASSWORD $auth_host
   addUser jvb $JVB_PASSWORD $auth_host
   addUser $APP_ID $APP_PASSWORD $JITSI_DOMAIN
+
+  if [ -f  /etc/jitsi/videobridge/jvb.public.conf ]; then
+    ln -sf /etc/jitsi/videobridge/jvb.public.conf /etc/jitsi/videobridge/jvb.conf
+  else
+    if [ -f  /etc/jitsi/videobridge/jvb.private.conf ]; then
+      ln -sf /etc/jitsi/videobridge/jvb.private.conf /etc/jitsi/videobridge/jvb.conf
+    fi
+  fi
 
   pub_ip=$(grep public-address /etc/jitsi/videobridge/jvb.conf | awk '{print $3}' | sed -e s/\"//g)
   if [ "$pub_ip" != "" ]; then
