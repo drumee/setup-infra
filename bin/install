@@ -65,6 +65,8 @@ if [ "$PRIVATE_DOMAIN" != "" ]; then
 fi
 
 setup_dirs
+
+set +e
 setup_prosody
 
 crontab  < /etc/cron.d/drumee
