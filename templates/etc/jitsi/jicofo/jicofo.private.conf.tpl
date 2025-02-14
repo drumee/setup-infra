@@ -1,7 +1,7 @@
 jicofo {
     // Configuration related to jitsi-videobridge
     bridge {
-      brewery-jid = "jvbbrewery@internal-muc.<%= jitsi_public_domain %>" 
+      brewery-jid = "jvbbrewery@internal-muc.<%= jitsi_private_domain %>" 
     }
     // Configure the codecs and RTP extensions to be used in the offer sent to clients.
     codec {
@@ -26,19 +26,19 @@ jicofo {
     authentication: {
        enabled: true
        type: JWT
-       login-url: <%= jitsi_public_domain %>
+       login-url: <%= jitsi_private_domain %>
     }
     xmpp {
       client {
         enabled = true
-        hostname = "xmpp.<%= jitsi_public_domain %>"
+        hostname = "xmpp.<%= jitsi_private_domain %>"
         port = "5222"
-        domain = "auth.<%= jitsi_public_domain %>"
-        xmpp-domain = "<%= jitsi_public_domain %>"
+        domain = "auth.<%= jitsi_private_domain %>"
+        xmpp-domain = "<%= jitsi_private_domain %>"
         username = "focus"
         password = "<%= jicofo_password %>"
-        conference-muc-jid = "muc.<%= jitsi_public_domain %>"
-        client-proxy = "focus.<%= jitsi_public_domain %>"
+        conference-muc-jid = "muc.<%= jitsi_private_domain %>"
+        client-proxy = "focus.<%= jitsi_private_domain %>"
         disable-certificate-verification = true
       }
     }
