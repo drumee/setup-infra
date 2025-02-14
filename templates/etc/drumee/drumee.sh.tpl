@@ -5,6 +5,9 @@
 # -------------------------------------------------------------
 
 export CERTS_DIR=<%= certs_dir %>
+if [ -d "$OWN_CERTS_DIR" ]; then
+  export ACME_DIR="$OWN_CERTS_DIR"
+fi
 
 <% if (typeof(public_domain) !== "undefined" && public_domain != "" ) { %>
 
@@ -16,6 +19,12 @@ export NSUPDATE_SERVER=ns1.<%= public_domain %>
 export NSUPDATE_ZONE=<%= public_domain %>
 export PUBLIC_DOMAIN=<%= public_domain %>
 
+<% } %>
+
+<% if (typeof(jitsi_public_domain) !== "undefined" && jitsi_public_domain != "" ) { %>
+export JITSI_DOMAIN=<%= jitsi_public_domain %>
+<% } else if (typeof(jitsi_private_domain) !== "undefined" && jitsi_private_domain != "" ) { %>
+export JITSI_DOMAIN=<%= jitsi_private_domain %>
 <% } %>
 
 export APP_ROUTING_MARK=<%= public_ui_root %>
@@ -40,11 +49,7 @@ export DRUMEE_TMP_DIR=<%= data_dir %>/tmp
 export DRUMEE_UI_HOME=<%= runtime_dir %>/ui
 export DRUMEE_BACKUP_STORAGE=<%= backup_storage %>
 export DRUMEE_DB_BACKUP=<%= backup_storage %>/db
-export JITSI_DOMAIN=<%= jitsi_public_domain %>
-export OWN_CERTS_DIR=<%= own_certs_dir %>
 export PUBLIC_UI_ROOT=<%= public_ui_root %>
+export PUBLIC_HTTP_PORT=<%= public_http_port %>
 export PUBLIC_HTTPS_PORT=<%= public_https_port %>
 
-if [ -d "$OWN_CERTS_DIR" ]; then
-  export ACME_DIR="$OWN_CERTS_DIR"
-fi
