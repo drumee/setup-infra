@@ -10,7 +10,6 @@ if [ -d "$OWN_CERTS_DIR" ]; then
 fi
 
 <% if (typeof(public_domain) !== "undefined" && public_domain != "" ) { %>
-
 export ACME_CA_SERVER=<%= ca_server %>
 export ACME_DIR=<%= acme_dir %>
 export ACME_EMAIL_ACCOUNT=<%= acme_email_account %>
@@ -18,7 +17,6 @@ export ACME_STORE=<%= certs_dir %>/<%= public_domain %>_ecc
 export NSUPDATE_SERVER=ns1.<%= public_domain %>
 export NSUPDATE_ZONE=<%= public_domain %>
 export PUBLIC_DOMAIN=<%= public_domain %>
-
 <% } %>
 
 <% if (typeof(jitsi_public_domain) !== "undefined" && jitsi_public_domain != "" ) { %>

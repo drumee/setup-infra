@@ -47,7 +47,7 @@ _dmarc          60  IN  TXT "v=DMARC1; p=quarantine;  sp=quarantine; aspf=s"
 ;
 ;
 ; Jitsi subdomain
-$ORIGIN <%= jitsi_prvate_domain %>.
+$ORIGIN <%= jitsi_private_domain %>.
 ;
 <% if (typeof(private_ip4) !== "undefined" && private_ip4 != "" ) { %>
 *		60	IN	A	    <%= private_ip4 %>

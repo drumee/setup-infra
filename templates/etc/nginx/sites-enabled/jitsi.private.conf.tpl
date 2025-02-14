@@ -14,14 +14,14 @@ map $http_upgrade $connection_upgrade {
 server {
 	listen <%= public_http_port %> default_server;
 	listen [::]:<%= public_http_port %> default_server;
-    server_name *.<%= jitsi_prvate_domain %>;
+    server_name *.<%= jitsi_private_domain %>;
 	include /etc/jitsi/meet.conf;
 }
 
 server {
 	listen <%= public_https_port %> ssl http2;
 	listen [::]:<%= public_https_port %> ssl http2;
-	server_name <%= jitsi_prvate_domain %>; 
+	server_name <%= jitsi_private_domain %>; 
 	include /etc/jitsi/ssl.conf;
 	include /etc/jitsi/meet.conf;
 }
