@@ -10,7 +10,7 @@ export base=$(dirname $script_dir)
 export PUBLIC_DOMAIN=$DRUMEE_DOMAIN_NAME
 
 if [ "$PUBLIC_DOMAIN" != "" ]; then
-  $base/bin/init-mail $PUBLIC_DOMAIN
+  $base/bin/init-mail $DRUMEE_DOMAIN_NAME$PUBLIC_DOMAIN
 fi
 
 # Generate all the required settings 
@@ -54,6 +54,8 @@ protect_dir $DRUMEE_TMP_DIR "yes"
 protect_dir $DRUMEE_SERVER_HOME
 protect_dir $DRUMEE_EXPORT_DIR
 protect_dir $DRUMEE_IMPORT_DIR
+
+$base/bin/init-named
 
 $base/bin/init-acme
 if [ "$PUBLIC_DOMAIN" != "" ]; then

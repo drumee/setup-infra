@@ -30,8 +30,8 @@ zone "<%= private_domain %>" {
     allow-transfer { <%= private_ip4 %>; };
 };
 <% } %>
-<% if (typeof(private_reverse_ip4) !== "undefined" && private_reverse_ip4 != "" ) { %>
-zone "<%= private_reverse_ip4 %>" {
+<% if (typeof(reverse_private_ip4) !== "undefined" && reverse_private_ip4 != "" ) { %>
+zone "<%= reverse_private_ip4 %>.in-addr.arpa" {
     type master;
     file "/var/lib/bind/<%= private_ip4 %>";
     allow-query { any; };
