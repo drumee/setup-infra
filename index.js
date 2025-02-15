@@ -265,34 +265,6 @@ function makeData(opt) {
     }
   }
 
-  /** Named extra settings */
-  data.allow_recursion = 'localhost;';
-
-  if (data.public_ip4) {
-    data.allow_recursion = `${data.allow_recursion} ${data.public_ip4};`
-    let a = data.public_ip4.split('.');
-    a.pop();
-    data.reverse_public_ip4 = a.reverse().join('.');
-  } else {
-    data.reverse_public_ip4 = ""
-  }
-
-  if (!data.public_ip6) {
-    data.public_ip6 = "";
-  }
-
-  if (data.private_ip4) {
-    data.allow_recursion = `${data.allow_recursion} ${data.private_ip4};`
-    let a = data.private_ip4.split('.');
-    a.pop();
-    data.reverse_private_ip4 = a.reverse().join('.');
-  } else {
-    data.reverse_private_ip4 = ""
-  }
-
-  if (!data.public_ip6) {
-    data.public_ip6 = "";
-  }
 
   if (!data.storage_backup) {
     data.storage_backup = ""
@@ -305,7 +277,7 @@ function makeData(opt) {
   if (data.public_domain) {
     data.use_email = 1;
     data.jitsi_public_domain = `jit.${data.public_domain}`;
-  }else {
+  } else {
     data.use_email = 0;
   }
 
@@ -712,6 +684,37 @@ async function getAddresses(data) {
 
   data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
   data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
+
+  /** Named extra settings */
+  data.allow_recursion = 'localhost;';
+
+  if (data.public_ip4) {
+    data.allow_recursion = `${data.allow_recursion} ${data.public_ip4};`
+    let a = data.public_ip4.split('.');
+    a.pop();
+    data.reverse_public_ip4 = a.reverse().join('.');
+  } else {
+    data.reverse_public_ip4 = ""
+  }
+
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
+  }
+  console.log(data, data.private_ip4)
+  if (data.private_ip4) {
+    data.allow_recursion = `${data.allow_recursion} ${data.private_ip4};`
+    let a = data.private_ip4.split('.');
+    a.pop();
+    data.reverse_private_ip4 = a.reverse().join('.');
+  } else {
+    data.reverse_private_ip4 = ""
+  }
+
+  console.log(data, data.private_ip4, data.reverse_private_ip4)
+
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
+  }
 
   return data;
 }

@@ -22,8 +22,8 @@ options {
 	version "not currently available";
 
     // allow recursion for trusted clients only.
-    recursion yes;
     allow-query { <%= allow_recursion %> };
+    recursion yes;
 
 	// enable the query log
 	querylog yes;
