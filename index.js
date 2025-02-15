@@ -269,6 +269,7 @@ function makeData(opt) {
   data.allow_recursion = 'localhost;';
 
   if (data.public_ip4) {
+    data.allow_recursion = `${data.allow_recursion} ${data.public_ip4};`
     let a = data.public_ip4.split('.');
     a.pop();
     data.reverse_public_ip4 = a.reverse().join('.');
@@ -281,6 +282,7 @@ function makeData(opt) {
   }
 
   if (data.private_ip4) {
+    data.allow_recursion = `${data.allow_recursion} ${data.private_ip4};`
     let a = data.private_ip4.split('.');
     a.pop();
     data.reverse_private_ip4 = a.reverse().join('.');
@@ -472,8 +474,7 @@ function writeInfraConf(data) {
   const postfix = join(etc, 'postfix',);
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
-  const { public_domain, private_domain, certs_dir, jitsi_private_domain, jitsi_public_domain } = data;
-  console.log("AAA:668", { public_domain, private_domain, certs_dir, jitsi_private_domain, jitsi_public_domain })
+  const { public_domain, private_domain, certs_dir } = data;
   let targets = [
 
     // Nginx 
@@ -493,13 +494,13 @@ function writeInfraConf(data) {
     `${bind}/named.conf.options`,
     `${mariadb}/50-server.cnf`,
     `${mariadb}/50-client.cnf`,
+    `${bind}/named.conf.local`,
   ];
 
   if (data.public_ip4 && public_domain) {
     targets.push(
       `${nginx}/sites-enabled/public.conf`,
       `${drumee}/ssl/public.conf`,
-      `${bind}/named.conf.public`,
       { tpl: `${libbind}/public.tpl`, out: `${libbind}/${public_domain}` },
       { tpl: `${libbind}/public-reverse.tpl`, out: `${libbind}/${data.public_ip4}` }
     );
@@ -529,7 +530,6 @@ function writeInfraConf(data) {
         tpl: `${drumee}/certs/local.cnf`,
         out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
       },
-      `${bind}/named.conf.private`,
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
       { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
     )

@@ -7,84 +7,84 @@ const parser = new argparse.ArgumentParser({
   add_help: true,
 });
 
-parser.addArgument("--readonly", {
+parser.add_argument("--readonly", {
   type: "int",
-  defaultValue: 0,
+  default: 0,
   help: "Print content instead of actually writing to files",
 });
 
-parser.addArgument("--chroot", {
+parser.add_argument("--chroot", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Output root. Defaulted to /",
 });
 
-parser.addArgument("--force-install", {
+parser.add_argument("--force-install", {
   type: String,
-  defaultValue: 0,
+  default: 0,
   help: "Override existing configs",
 });
 
-parser.addArgument("--outdir", {
+parser.add_argument("--outdir", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "If set, takes precedent on chroot. Output root. Defaulted to /",
 });
 
-parser.addArgument("--public-domain", {
+parser.add_argument("--public-domain", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Public domain name",
 });
 
-parser.addArgument("--private-domain", {
+parser.add_argument("--private-domain", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Private domain name",
 });
 
-parser.addArgument("--public-ip4", {
+parser.add_argument("--public-ip4", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Public IPV4",
 });
 
-parser.addArgument("--public-ip6", {
+parser.add_argument("--public-ip6", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Public IPV6",
 });
 
-parser.addArgument("--private-ip4", {
+parser.add_argument("--private-ip4", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Private IPV4",
 });
 
-parser.addArgument("--private-ip6", {
+parser.add_argument("--private-ip6", {
   type: String,
-  defaultValue: null,
+  default: null,
   help: "Private IPV6",
 });
 
-parser.addArgument("--envfile", {
+parser.add_argument("--envfile", {
   type: String,
   help: "Data set required to install Drumee",
 });
 
-parser.addArgument("--only-infra", {
+parser.add_argument("--only-infra", {
   type: "int",
-  defaultValue: 0,
+  default: 0,
   help: "If set, write only configs related to infra. Same as no-jitsi",
 });
 
-parser.addArgument("--no-jitsi", {
+parser.add_argument("--no-jitsi", {
   type: "int",
-  defaultValue: 0,
+  default: 0,
   help: "If set, won't write configs related to jisit. Same as only-infra",
 });
 
-const args = parser.parseArgs();
+const args = parser.parse_args();
 
 /**
  * 
