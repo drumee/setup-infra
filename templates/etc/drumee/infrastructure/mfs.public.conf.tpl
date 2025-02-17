@@ -10,7 +10,7 @@ location / {
   location ~ (.+)$ {
     add_header Cache-Control max-age=31536000;
     fastcgi_hide_header Set-Cookie;
-    add_header Access-Control-Allow-Origin <%= domain %>;
+    add_header Access-Control-Allow-Origin <%= public_domain %>;
     rewrite /(.+)$ <%= public_ui_root %>/svc/media.raw?p=/$1&d=inline;
   }
 }

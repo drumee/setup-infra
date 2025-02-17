@@ -459,9 +459,6 @@ function writeInfraConf(data) {
     `${drumee}/conf.d/drumee.json`,
     `${drumee}/conf.d/myDrumee.json`,
 
-    `${infra}/mfs.conf`,
-    `${infra}/routes/main.conf`,
-    `${infra}/internals/accel.conf`,
     `${bind}/named.conf.log`,
     `${bind}/named.conf.options`,
     `${mariadb}/50-server.cnf`,
@@ -471,6 +468,9 @@ function writeInfraConf(data) {
 
   if (data.public_ip4 && public_domain) {
     targets.push(
+      `${infra}/internals/accel.public.conf`,
+      `${infra}/mfs.public.conf`,
+      `${infra}/routes/public.conf`,
       `${nginx}/sites-enabled/public.conf`,
       `${drumee}/ssl/public.conf`,
       { tpl: `${libbind}/public.tpl`, out: `${libbind}/${public_domain}` },
@@ -496,6 +496,9 @@ function writeInfraConf(data) {
 
   if (data.private_ip4 && private_domain) {
     targets.push(
+      `${infra}/internals/accel.private.conf`,
+      `${infra}/mfs.private.conf`,
+      `${infra}/routes/private.conf`,
       `${nginx}/sites-enabled/private.conf`,
       `${drumee}/ssl/private.conf`,
       {
@@ -544,7 +547,7 @@ function writeInfraConf(data) {
  * @param {*} targets 
  * @param {*} type 
  */
-function _addConfigsFiles(targets, data, type = 'private') {
+function _addJitsiConfigsFiles(targets, data, type = 'private') {
   const etc = 'etc';
   const jitsi = join(etc, 'jitsi');
   const nginx = join(etc, 'nginx');
@@ -576,7 +579,6 @@ function _addConfigsFiles(targets, data, type = 'private') {
       tpl: `${drumee}/conf.d/conference.${type}.json`,
       out: `${drumee}/conf.d/${domain}.json`,
     },
-
   )
 }
 
@@ -600,9 +602,9 @@ function writeJitsiConf(data) {
   ];
 
   if (data.public_domain) {
-    _addConfigsFiles(targets, data, `public`)
+    _addJitsiConfigsFiles(targets, data, `public`)
   } else if (data.private_domain) {
-    _addConfigsFiles(targets, data, `private`)
+    _addJitsiConfigsFiles(targets, data, `private`)
   } else {
     console.error(" No domain name available!")
     return

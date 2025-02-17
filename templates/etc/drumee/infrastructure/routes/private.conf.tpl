@@ -8,7 +8,7 @@
 location <%= location %>app/ {
   alias /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/app/;
   add_header Cache-Control max-age=31536000;
-  add_header Access-Control-Allow-Origin <%= domain %>;
+  add_header Access-Control-Allow-Origin <%= private_domain %>;
   fastcgi_hide_header Set-Cookie;
   break;
 }
@@ -17,7 +17,7 @@ location <%= location %>app/ {
 location <%= location %>api/ {
   alias /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/api/;
   add_header Cache-Control max-age=31536000;
-  add_header Access-Control-Allow-Origin <%= domain %>;
+  add_header Access-Control-Allow-Origin <%= private_domain %>;
   fastcgi_hide_header Set-Cookie;
   break;
 }
@@ -26,7 +26,7 @@ location <%= location %>api/ {
 location <%= location %>plugins/ {
   alias /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/plugins/;
   add_header Cache-Control max-age=31536000;
-  add_header Access-Control-Allow-Origin <%= domain %>;
+  add_header Access-Control-Allow-Origin <%= private_domain %>;
   fastcgi_hide_header Set-Cookie;
   break;
 }
@@ -110,7 +110,7 @@ location <%= location %> {
     add_header Pragma public;
     add_header Cache-Control max-age=31536000;
     fastcgi_hide_header Set-Cookie;
-    add_header Access-Control-Allow-Origin <%= domain %>;
+    add_header Access-Control-Allow-Origin <%= private_domain %>;
     rewrite /avatar/(.+)$ /-/svc/yp.avatar?id=$1 last;
     break;
   }
@@ -118,7 +118,7 @@ location <%= location %> {
   location ~ (.+)\.(.+)$ {
     fastcgi_hide_header Set-Cookie;
     add_header Cache-Control max-age=31536000;
-    add_header Access-Control-Allow-Origin <%= domain %>;
+    add_header Access-Control-Allow-Origin <%= private_domain %>;
     rewrite /somanos/(.+)$ /-/svc/media.raw&p=$1&d=inline;
     break;
   }
