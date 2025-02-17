@@ -562,6 +562,7 @@ function _addConfigsFiles(targets, data, type = 'private') {
       out: `${jitsi}/jicofo/sip-cmmunicator.properties`
     },
     `${jitsi}/videobridge/jvb.${type}.conf`,
+    `${jitsi}/ssl.${type}.conf`,
     `${jitsi}/meet.${type}.conf`,
     `${jitsi}/web/config.${type}.js`,
     `${nginx}/sites-enabled/jitsi.${type}.conf`,
