@@ -15,14 +15,14 @@ server {
 	listen <%= public_http_port %> default_server;
 	listen [::]:<%= public_http_port %> default_server;
     server_name *.<%= jitsi_public_domain %>;
-	include /etc/jitsi/meet.conf;
+	include /etc/jitsi/meet.public.conf;
 }
 
 server {
 	listen <%= public_https_port %> ssl http2;
 	listen [::]:<%= public_https_port %> ssl http2;
 	server_name <%= jitsi_public_domain %>; 
-	include /etc/jitsi/ssl.conf;
-	include /etc/jitsi/meet.conf;
+	include /etc/jitsi/ssl.public.conf;
+	include /etc/jitsi/meet.public.conf;
 }
 
