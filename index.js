@@ -447,6 +447,7 @@ function writeInfraConf(data) {
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
   const { public_domain, private_domain, certs_dir } = data;
+  console.log(data)
   let targets = [
 
     // Nginx 
@@ -542,12 +543,53 @@ function writeInfraConf(data) {
     'etc/cron.d/drumee',
   ])
 }
+
 /**
  * 
  * @param {*} targets 
  * @param {*} type 
  */
 function _addJitsiConfigsFiles(targets, data, type = 'private') {
+  const etc = 'etc';
+  const jitsi = join(etc, 'jitsi');
+  const nginx = join(etc, 'nginx');
+  const prosody = join(etc, 'prosody');
+  const drumee = join(etc, 'drumee');
+
+  const domain = data[`jitsi_${type}_domain`];
+  targets.push(
+    {
+      tpl: `${jitsi}/jicofo/jicofo.${type}.conf`,
+      out: `${jitsi}/jicofo/jicofo.conf`,
+    },
+    {
+      tpl: `${jitsi}/jicofo/sip-cmmunicator.${type}.properties`,
+      out: `${jitsi}/jicofo/sip-cmmunicator.properties`
+    },
+    `${jitsi}/videobridge/jvb.${type}.conf`,
+    `${jitsi}/ssl.${type}.conf`,
+    `${jitsi}/meet.${type}.conf`,
+    `${jitsi}/web/config.${type}.js`,
+    `${nginx}/sites-enabled/jitsi.${type}.conf`,
+    `${nginx}/modules-enabled/90-turn-relay.${type}.conf`,
+    {
+      tpl: `${prosody}/conf.d/${type}.cfg.lua`,
+      out: `${prosody}/conf.d/${domain}.cfg.lua`,
+    },
+    `${etc}/turnserver.${type}.conf`,
+    {
+      tpl: `${drumee}/conf.d/conference.${type}.json`,
+      out: `${drumee}/conf.d/${domain}.json`,
+    },
+  )
+}
+
+/**
+ * 
+ * @param {*} targets 
+ * @param {*} type 
+ */
+function _addDrumeeConfigsFiles(targets, data, type = 'private') {
   const etc = 'etc';
   const jitsi = join(etc, 'jitsi');
   const nginx = join(etc, 'nginx');
