@@ -5,9 +5,9 @@ default_md          = sha256
 distinguished_name  = dn
 
 [ dn ]
-C  = KH
+C  = XX
 ST = YourState
 L  = YourCity
-O  = Drumee
-OU = Drumee Local
-CN = *.<%= jitsi_private_domain %>
+O  = Drumee Web OS
+OU = Drumee API services
+CN = *.<%= private_domain %>
