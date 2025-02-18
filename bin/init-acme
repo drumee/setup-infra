@@ -31,6 +31,20 @@ function make_certs(){
     fi
     sum=$(expr 1 + $sum)
   done
+
+  ca_dir=/usr/local/share/ca-certificates
+  mkdir -p $ca_dir
+  
+  cert_file="${CERTS_DIR}/${dom}_ecc/${dom}"
+  if [ -f "${cert_file}.cer" ]; then
+    cp -f "${cert_file}.cer" "${target}.cer"
+  fi
+
+  if [ -f "${cert_file}.key" ]; then
+    cp -f "${cert_file}.key" "${target}.key"
+    chmod g+r "${cert_file}.key"
+  fi
+
 }
 
 set +e

@@ -7,22 +7,22 @@ source /etc/prosody/defaults/credentials.sh
 function setup_dirs() {
   echo Configuring directories permissions
 
-  ca_dir=/usr/local/share/ca-certificates
-  mkdir -p $ca_dir
+  # ca_dir=/usr/local/share/ca-certificates
+  # mkdir -p $ca_dir
 
-  cert_file="${CERTS_DIR}/${JITSI_DOMAIN}_ecc/${JITSI_DOMAIN}"
-  target="${ca_dir}/auth.${JITSI_DOMAIN}"
+  # cert_file="${CERTS_DIR}/${JITSI_DOMAIN}_ecc/${JITSI_DOMAIN}"
+  # target="${ca_dir}/auth.${JITSI_DOMAIN}"
 
-  if [ -f "${cert_file}.cer" ]; then
-    ln -sf "${cert_file}.cer" "${target}.cer"
-  fi
+  # if [ -f "${cert_file}.cer" ]; then
+  #   cp -f "${cert_file}.cer" "${target}.cer"
+  # fi
 
-  if [ -f "${cert_file}.key" ]; then
-    chmod g+r "${cert_file}.key"
-    ln -sf "${cert_file}.key" "${target}.key"
-  fi
+  # if [ -f "${cert_file}.key" ]; then
+  #   chmod g+r "${cert_file}.key"
+  #   cp -f "${cert_file}.key" "${target}.key"
+  # fi
   
-  update-ca-certificates
+  # update-ca-certificates
 
   mkdir -p $DRUMEE_RUNTIME_DIR/prosody
   chown -R prosody:prosody $DRUMEE_RUNTIME_DIR/prosody
