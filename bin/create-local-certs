@@ -1,17 +1,33 @@
 #!/bin/bash
-cnf_dir="/etc/drumee/certs/${PRIVATE_DOMAIN}_ecc"
-cnf=$cnf_dir/local.cnf
-if [ ! -f $cnf ]; then
-  echo "Local certificates could not be created. $cnf is issing "
-  exit 1
+
+function self_sign(){
+  domain=$1
+  echo "Configuring certificates for $1..."
+  cnf_dir="/etc/drumee/certs/${domain}_ecc"
+  cnf=$cnf_dir/${domain}.cnf
+  if [ ! -f $cnf ]; then
+    echo "Local certificates could not be created. $cnf is missing "
+    exit 1
+  fi
+
+  cd $cnf_dir
+
+  openssl req -x509 -newkey rsa:4096 -keyout ${domain}.key -out ${domain}.cer -sha256 -days 3650 -nodes -config $cnf
+
+  cp ${domain}.cer /usr/local/share/ca-certificates/
+}
+
+#-------------------
+
+if [ "$PRIVATE_DOMAIN" != "" ]; then
+  self_sign $PRIVATE_DOMAIN
 fi
 
-cd $cnf_dir
+if [ "$JITSI_DOMAIN" != "" ]; then
+  self_sign $JITSI_DOMAIN
+fi
 
-openssl req -new -key ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.csr -config local.cnf
 
-openssl x509 -req -in ${PRIVATE_DOMAIN}.csr -signkey ${PRIVATE_DOMAIN}.key -out ${PRIVATE_DOMAIN}.cer
-
-cp ${PRIVATE_DOMAIN}.cer /usr/local/share/ca-certificates/
 
 update-ca-certificates
+

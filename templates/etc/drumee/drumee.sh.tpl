@@ -19,6 +19,11 @@ export NSUPDATE_ZONE=<%= public_domain %>
 export PUBLIC_DOMAIN=<%= public_domain %>
 <% } %>
 
+<% if (typeof(private_domain) !== "undefined" && private_domain != "" ) { %>
+export ACME_STORE=<%= certs_dir %>/<%= private_domain %>_ecc
+export PRIVATE_DOMAIN=<%= private_domain %>
+<% } %>
+
 <% if (typeof(jitsi_public_domain) !== "undefined" && jitsi_public_domain != "" ) { %>
 export JITSI_DOMAIN=<%= jitsi_public_domain %>
 <% } else if (typeof(jitsi_private_domain) !== "undefined" && jitsi_private_domain != "" ) { %>

@@ -31,10 +31,10 @@ server {
 
 	set $prefix "";
 
-	include /etc/drumee/ssl/main.conf;
-	include /etc/drumee/infrastructure/routes/*.conf;
-	include /etc/drumee/infrastructure/internals/*.conf;
-	include /etc/drumee/infrastructure/mfs.conf;
+	include /etc/drumee/ssl/public.conf;
+	include /etc/drumee/infrastructure/internals/accel.public.conf;
+	include /etc/drumee/infrastructure/routes/public.conf;
+	include /etc/drumee/infrastructure/mfs.public.conf;
 }
 
 

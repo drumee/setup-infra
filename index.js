@@ -446,8 +446,7 @@ function writeInfraConf(data) {
   const postfix = join(etc, 'postfix',);
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
-  const { public_domain, private_domain, certs_dir } = data;
-  console.log(data)
+  let { certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
   let targets = [
 
     // Nginx 
@@ -503,11 +502,20 @@ function writeInfraConf(data) {
       `${nginx}/sites-enabled/private.conf`,
       `${drumee}/ssl/private.conf`,
       {
-        tpl: `${drumee}/certs/local.cnf`,
+        tpl: `${drumee}/certs/private.cnf`,
         out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
       },
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
       { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
+    )
+  }
+
+  if (jitsi_private_domain) {
+    targets.push(
+      {
+        tpl: `${drumee}/certs/jitsi.private.cnf`,
+        out: `${certs_dir}/${jitsi_private_domain}_ecc/${jitsi_private_domain}.cnf`
+      },
     )
   }
 
@@ -642,7 +650,7 @@ function writeJitsiConf(data) {
     `${prosody}/defaults/credentials.sh`,
     `${prosody}/prosody.cfg.lua`,
   ];
-
+  let { public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
   if (data.public_domain) {
     _addJitsiConfigsFiles(targets, data, `public`)
   } else if (data.private_domain) {
@@ -745,7 +753,6 @@ async function getAddresses(data) {
   if (!data.public_ip6) {
     data.public_ip6 = "";
   }
-  console.log(data, data.private_ip4)
   if (data.private_ip4) {
     data.allow_recursion = `${data.allow_recursion} ${data.private_ip4};`
     let a = data.private_ip4.split('.');
@@ -754,8 +761,6 @@ async function getAddresses(data) {
   } else {
     data.reverse_private_ip4 = ""
   }
-
-  console.log(data, data.private_ip4, data.reverse_private_ip4)
 
   if (!data.public_ip6) {
     data.public_ip6 = "";
