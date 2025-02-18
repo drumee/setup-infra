@@ -22,6 +22,6 @@ fi
 chown -R bind:bind /etc/bind
 
 echo Restarting named
-service named restart
+service named start
 
 echo "DNS server has been successfuly setup!"

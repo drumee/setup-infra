@@ -55,16 +55,17 @@ protect_dir $DRUMEE_SERVER_HOME
 protect_dir $DRUMEE_EXPORT_DIR
 protect_dir $DRUMEE_IMPORT_DIR
 
-$base/bin/init-named
 
-$base/bin/init-acme
-if [ "$PUBLIC_DOMAIN" != "" ]; then
-  $base/bin/init-acme
-fi
+$base/bin/init-named
 
 if [ "$PRIVATE_DOMAIN" != "" ]; then
   $base/bin/create-local-certs
 fi
+
+if [ "$PUBLIC_DOMAIN" != "" ]; then
+  $base/bin/init-acme
+fi
+
 
 setup_dirs
 
