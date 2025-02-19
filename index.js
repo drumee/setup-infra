@@ -447,6 +447,7 @@ function writeInfraConf(data) {
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
   let { certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
+  console.log("AAAA:450", { certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain })
   let targets = [
 
     // Nginx 
