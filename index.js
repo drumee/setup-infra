@@ -274,8 +274,10 @@ function makeData(opt) {
     data.jitsi_private_domain = `jit.${data.private_domain}`;
   }
 
+  console.log("AAAAA:277", `***${data.public_domain}***`)
   if (data.public_domain) {
     data.use_email = 1;
+    console.log("AAAAA:279", `***${data.public_domain}***`)
     data.jitsi_public_domain = `jit.${data.public_domain}`;
   } else {
     data.use_email = 0;
