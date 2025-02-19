@@ -26,7 +26,9 @@ export PRIVATE_DOMAIN=<%= private_domain %>
 
 <% if (typeof(jitsi_public_domain) !== "undefined" && jitsi_public_domain != "" ) { %>
 export JITSI_DOMAIN=<%= jitsi_public_domain %>
+#jitsi_public_domain
 <% } else if (typeof(jitsi_private_domain) !== "undefined" && jitsi_private_domain != "" ) { %>
+#jitsi_private_domain
 export JITSI_DOMAIN=<%= jitsi_private_domain %>
 <% } %>
 
