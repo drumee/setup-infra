@@ -367,8 +367,8 @@ function getSysConfigs() {
   if (args.readonly) {
     return configs;
   }
-  data.domain = public_domain || private_domain;
-  data.main_domain = data.domain;
+  configs.domain = public_domain || private_domain;
+  configs.main_domain = data.domain;
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
   console.log("Writing main conf into drumee.json", configs, filename, { private_domain, public_domain }, data.main_domain);
