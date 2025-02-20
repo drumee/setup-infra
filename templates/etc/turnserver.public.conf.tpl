@@ -3,8 +3,8 @@ use-auth-secret
 keep-address-family
 static-auth-secret=<%= turn_sercret %>
 realm=<%= jitsi_public_domain %>
-cert=<%= acme_dir %>/certs/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.cer
-pkey=<%= acme_dir %>/certs/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.key
+cert=<%= certs_dir %>/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.cer
+pkey=<%= certs_dir %>/<%= jitsi_public_domain %>_ecc/<%= jitsi_public_domain %>.key
 external-ip=<%= public_ip4 %> / <%= public_ip6 %>
 no-multicast-peers
 no-cli

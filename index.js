@@ -276,10 +276,8 @@ function makeData(opt) {
     data.jitsi_private_domain = "";
   }
 
-  console.log("AAAAA:277", data.public_domain, `***${data.public_domain}***`)
   if (data.public_domain) {
     data.use_email = 1;
-    console.log("AAAAA:279", `***${data.public_domain}***`)
     data.jitsi_public_domain = `jit.${data.public_domain}`;
   } else {
     data.use_email = 0;
@@ -369,9 +367,10 @@ function getSysConfigs() {
   }
   configs.domain = public_domain || private_domain;
   configs.main_domain = data.domain;
+  configs.domain_name = data.domain;
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
-  console.log("Writing main conf into drumee.json", configs, filename, { private_domain, public_domain }, data.main_domain);
+  console.log("Writing main conf into drumee.json");
   Template.makedir(dirname(filename));
   writeFileSync(filename, configs, JSON_OPT);
   return configs;
@@ -454,7 +453,6 @@ function writeInfraConf(data) {
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
   let { certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
-  console.log("AAAA:450", { certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain })
   let targets = [
 
     // Nginx 
@@ -479,7 +477,7 @@ function writeInfraConf(data) {
       `${infra}/internals/accel.public.conf`,
       `${infra}/mfs.public.conf`,
       `${infra}/routes/public.conf`,
-      `${nginx}/sites-enabled/public.conf`,
+      `${nginx}/sites-enabled/01-public.conf`,
       `${drumee}/ssl/public.conf`,
       { tpl: `${libbind}/public.tpl`, out: `${libbind}/${public_domain}` },
       { tpl: `${libbind}/public-reverse.tpl`, out: `${libbind}/${data.public_ip4}` }
@@ -507,7 +505,7 @@ function writeInfraConf(data) {
       `${infra}/internals/accel.private.conf`,
       `${infra}/mfs.private.conf`,
       `${infra}/routes/private.conf`,
-      `${nginx}/sites-enabled/private.conf`,
+      `${nginx}/sites-enabled/02-private.conf`,
       `${drumee}/ssl/private.conf`,
       {
         tpl: `${drumee}/certs/private.cnf`,
@@ -586,7 +584,7 @@ function _addJitsiConfigsFiles(targets, data, type = 'private') {
     `${jitsi}/ssl.${type}.conf`,
     `${jitsi}/meet.${type}.conf`,
     `${jitsi}/web/config.${type}.js`,
-    `${nginx}/sites-enabled/jitsi.${type}.conf`,
+    `${nginx}/sites-enabled/20-jitsi.${type}.conf`,
     `${nginx}/modules-enabled/90-turn-relay.${type}.conf`,
     {
       tpl: `${prosody}/conf.d/${type}.cfg.lua`,
@@ -626,7 +624,7 @@ function _addDrumeeConfigsFiles(targets, data, type = 'private') {
     `${jitsi}/ssl.${type}.conf`,
     `${jitsi}/meet.${type}.conf`,
     `${jitsi}/web/config.${type}.js`,
-    `${nginx}/sites-enabled/jitsi.${type}.conf`,
+    `${nginx}/sites-enabled/20-jitsi.${type}.conf`,
     `${nginx}/modules-enabled/90-turn-relay.${type}.conf`,
     {
       tpl: `${prosody}/conf.d/${type}.cfg.lua`,
