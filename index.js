@@ -371,7 +371,7 @@ function getSysConfigs() {
   data.main_domain = data.domain;
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
-  console.log("Writing main conf into drumee.json", configs, filename);
+  console.log("Writing main conf into drumee.json", configs, filename, { private_domain, public_domain }, data.main_domain);
   Template.makedir(dirname(filename));
   writeFileSync(filename, configs, JSON_OPT);
   return configs;
