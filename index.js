@@ -369,7 +369,7 @@ function getSysConfigs() {
   }
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
-  console.log("Writing main conf into drumee.json", filename);
+  console.log("Writing main conf into drumee.json", configs, filename);
   Template.makedir(dirname(filename));
   writeFileSync(filename, configs, JSON_OPT);
   return configs;
