@@ -365,7 +365,11 @@ function getSysConfigs() {
   if (args.readonly) {
     return configs;
   }
+
+  /** Settings designed to be used by the backend server */
   configs.domain = public_domain || private_domain;
+  configs.public_domain = public_domain;
+  configs.private_domain = private_domain;
   configs.main_domain = data.domain;
   configs.domain_name = data.domain;
   configs.socketPath = getSocketPath();
