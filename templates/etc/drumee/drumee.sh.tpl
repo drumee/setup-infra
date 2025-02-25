@@ -17,11 +17,16 @@ export ACME_STORE=<%= certs_dir %>/<%= public_domain %>_ecc
 export NSUPDATE_SERVER=ns1.<%= public_domain %>
 export NSUPDATE_ZONE=<%= public_domain %>
 export PUBLIC_DOMAIN=<%= public_domain %>
+export DRUMEE_DOMAIN_NAME=<%= public_domain %>
 <% } %>
 
 <% if (typeof(private_domain) !== "undefined" && private_domain != "" ) { %>
 export ACME_STORE=<%= certs_dir %>/<%= private_domain %>_ecc
 export PRIVATE_DOMAIN=<%= private_domain %>
+<% if (typeof(public_domain) === "undefined" || public_domain == "" ) { %>
+export DRUMEE_DOMAIN_NAME=<%= private_domain %>
+<% } %>
+
 <% } %>
 
 <% if (/^jit\.(.+)$/.test(jitsi_public_domain)) { %>

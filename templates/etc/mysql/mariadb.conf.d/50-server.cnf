@@ -52,14 +52,15 @@ bind-address            = 127.0.0.1
 # Both location gets rotated by the cronjob.
 # Be aware that this log type is a performance killer.
 # Recommend only changing this at runtime for short testing periods if needed!
-#general_log_file       = /var/log/mysql/mysql.log
+#general_log_file       = <%= db_dir %>/log/mysql.log
 #general_log            = 1
 
 # When running under systemd, error logging goes via stdout/stderr to journald
 # and when running legacy init error logging goes to syslog due to
 # /etc/mysql/conf.d/mariadb.conf.d/50-mysqld_safe.cnf
 # Enable this if you want to have error logging into a separate file
-#log_error = /var/log/mysql/error.log
+log_error = /var/log/mysql/error.log
+
 # Enable the slow query log to see queries with especially long duration
 #log_slow_query_file    = /var/log/mysql/mariadb-slow.log
 #log_slow_query_time    = 10
@@ -71,7 +72,7 @@ bind-address            = 127.0.0.1
 # note: if you are setting up a replication slave, see README.Debian about
 #       other settings you may need to change.
 #server-id              = 1
-#log_bin                = /var/log/mysql/mysql-bin.log
+#log_bin                = <%= db_dir %>/log/mysql-bin.log
 expire_logs_days        = 10
 #max_binlog_size        = 100M
 
