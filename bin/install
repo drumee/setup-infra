@@ -41,6 +41,8 @@ for d in mfs tmp; do
 done
 
 
+set +e
+
 LOG_DIR=$DRUMEE_SERVER_HOME/.pm2/logs
 
 touch $DRUMEE_DATA_DIR/mfs/dont-remove-this-dir
@@ -69,7 +71,6 @@ fi
 
 setup_dirs
 
-set +e
 setup_prosody
 
 crontab  < /etc/cron.d/drumee
