@@ -51,7 +51,8 @@ export DRUMEE_ROOT='/srv/drumee'
 export DRUMEE_RUNTIME_DIR=<%= runtime_dir %>
 export DRUMEE_SCHEMAS_DIR=<%= runtime_dir %>/server/schemas
 export DRUMEE_SERVER_HOME=<%= server_dir %>
-export DRUMEE_SERVER_NODE=<%= runtime_dir %>/dist/main/node_modules
+export DRUMEE_SERVER_MAIN=<%= server_location %>
+export DRUMEE_SERVER_NODE=<%= server_location %>/node_modules
 export DRUMEE_STATIC_DIR=<%= static_dir %>
 export DRUMEE_SYSTEM_GROUP=<%= system_group %>
 export DRUMEE_SYSTEM_USER=<%= system_user %>
