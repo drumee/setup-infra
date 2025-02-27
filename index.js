@@ -35,6 +35,7 @@ let {
   PUBLIC_IP4,
   PUBLIC_IP6,
   STORAGE_BACKUP,
+  INSTANCE_TYPE
 } = process.env;
 
 let PUBLIC_DOMAIN = DRUMEE_DOMAIN_NAME;
@@ -198,9 +199,31 @@ function writeEcoSystem(data) {
     script: "./service.js"
   }, instances, 'cluster_mode');
 
+
   let f = factory(data);
   let routes = [main, main_service, f];
-  //let ecosystem = "etc/drumee/infrastructure/ecosystem.json";
+  if (/^dev/.test(INSTANCE_TYPE)) {
+    const dev = worker({
+      ...data,
+      pushPort: 23001,
+      restPort: 24001,
+      mode: "dist",
+      route: "devel",
+      name: "devel",
+      script: "./index.js"
+    });
+    const dev_svc = worker({
+      ...data,
+      pushPort: 23001,
+      restPort: 24001,
+      mode: "dist",
+      route: "devel",
+      name: "devel/service",
+      script: "./service.js"
+    });
+    routes.push(dev, dev_svc)
+  }
+
   let ecosystem = Template.chroot("etc/drumee/infrastructure/ecosystem.json");
   if (args.readonly) {
     console.log("Readonly", ecosystem, routes);
@@ -284,6 +307,11 @@ function makeData(opt) {
     data.jitsi_public_domain = "";
   }
 
+  if (/^dev/.test(INSTANCE_TYPE)) {
+    data.disable_symlinks = 'off';
+  } else {
+    data.disable_symlinks = 'on';
+  }
   return data;
 }
 
