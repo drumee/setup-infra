@@ -207,25 +207,6 @@ function writeEcoSystem(data) {
 
   let f = factory(data);
   let routes = [main, main_service, f];
-  if (isDevInstance()) {
-    const dev = worker({
-      ...data,
-      pushPort: 23001,
-      restPort: 24001,
-      route: "devel",
-      name: "devel",
-      script: "./index.js"
-    });
-    const dev_svc = worker({
-      ...data,
-      pushPort: 23001,
-      restPort: 24001,
-      route: "devel",
-      name: "devel/service",
-      script: "./service.js"
-    });
-    routes.push(dev, dev_svc)
-  }
 
   let ecosystem = Template.chroot("etc/drumee/infrastructure/ecosystem.json");
   if (args.readonly) {
