@@ -32,7 +32,7 @@ server {
 	set $prefix "";
 
 	include /etc/drumee/ssl/private.conf;
-	include /etc/drumee/infrastructure/routes/private.conf;
+	include /etc/drumee/infrastructure/routes/*.conf;
 	include /etc/drumee/infrastructure/internals/accel.private.conf;
 	include /etc/drumee/infrastructure/mfs.private.conf;
 }

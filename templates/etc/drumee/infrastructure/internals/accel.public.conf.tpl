@@ -9,7 +9,7 @@ location /mfs/ {
   internal;
   add_header Cache-Control max-age=31536000;
   add_header Content-Encoding $upstream_http_content_encoding;
-  add_header Access-Control-Allow-Origin <%= domain %>;
+  add_header Access-Control-Allow-Origin <%= public_domain %>;
   alias <%= data_dir %>/mfs/;
 }
 
