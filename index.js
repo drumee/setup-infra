@@ -84,8 +84,7 @@ function copyFields(data, keys) {
  */
 function factory(data) {
   let route = "main";
-  let mode = "dist";
-  let base = `${data.server_dir}/${mode}/${route}/`;
+  let base = `${data.server_dir}/${route}/`;
   return {
     name: "factory",
     script: `./index.js`,
@@ -124,11 +123,10 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
     name,
     server_dir,
     runtime_dir,
-    mode,
   } = data;
 
   if (!server_dir) server_dir = join(runtime_dir, 'server');
-  let base = `${server_dir}/${mode}/${route}`;
+  let base = `${server_dir}/${route}`;
   return {
     name,
     script,
@@ -169,13 +167,20 @@ function writeTemplates(data, targets) {
 }
 
 /**
+ * 
+ * @returns 
+ */
+function isDevInstance(){
+  return /^dev/.test(INSTANCE_TYPE)
+}
+
+/**
  *
  */
 function writeEcoSystem(data) {
   const ports = {
     pushPort: 23000,
     restPort: 24000,
-    mode: "dist",
     route: "main",
   };
   let main = worker({
@@ -202,12 +207,11 @@ function writeEcoSystem(data) {
 
   let f = factory(data);
   let routes = [main, main_service, f];
-  if (/^dev/.test(INSTANCE_TYPE)) {
+  if (isDevInstance()) {
     const dev = worker({
       ...data,
       pushPort: 23001,
       restPort: 24001,
-      mode: "dist",
       route: "devel",
       name: "devel",
       script: "./index.js"
@@ -216,7 +220,6 @@ function writeEcoSystem(data) {
       ...data,
       pushPort: 23001,
       restPort: 24001,
-      mode: "dist",
       route: "devel",
       name: "devel/service",
       script: "./service.js"
@@ -307,10 +310,12 @@ function makeData(opt) {
     data.jitsi_public_domain = "";
   }
 
-  if (/^dev/.test(INSTANCE_TYPE)) {
+  if (isDevInstance()) {
     data.disable_symlinks = 'off';
+    data.logLevel = 3;
   } else {
     data.disable_symlinks = 'on';
+    data.logLevel = 2;
   }
   return data;
 }
@@ -719,7 +724,7 @@ function makeConfData(data) {
     jvb_password: randomString(),
     app_id: randomString(),
     app_password: randomString(),
-    ui_base: join(data.ui_base, 'dist', endpoint_name),
+    ui_base: join(data.ui_base, endpoint_name),
     location: '/-/',
     pushPort: 23000,
     restPort: 24000,

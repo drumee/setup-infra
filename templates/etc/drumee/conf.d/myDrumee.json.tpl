@@ -8,7 +8,8 @@
     "ru",
     "zh"
   ],
-  "verbosity": 2,
+  "verbosity": <%= logLevel %>,
+  "logLevel": <%= logLevel %>,
   "useEmail":<%= use_email %>,
   "quota": {
     "watermark": "<%= quota_watermark %>"
