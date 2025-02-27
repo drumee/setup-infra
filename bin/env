@@ -39,11 +39,14 @@ protect_dir() {
       echo "No directory to protect. Skipped"
     fi
   else
-    mkdir -p $dir
-    chown -R $DRUMEE_SYSTEM_USER:$DRUMEE_SYSTEM_GROUP $dir
-    if [ "$confidential" = "yes" ]; then
-      chmod -R go-rwx $dir
+    ro=$(grep $dir /proc/mounts | sed -E "s/^.+(ro).+$/readl-only/")
+    if [ "$ro" != "read-only" ]; then
+      mkdir -p $dir
+      chown -R $DRUMEE_SYSTEM_USER:$DRUMEE_SYSTEM_GROUP $dir
+      if [ "$confidential" = "yes" ]; then
+        chmod -R go-rwx $dir
+      fi
+      chmod -R u+rwx $dir
     fi
-    chmod -R u+rwx $dir
   fi
 }
