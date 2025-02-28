@@ -386,9 +386,9 @@ function getSysConfigs() {
   configs.private_domain = private_domain;
   configs.main_domain = data.domain;
   configs.domain_name = data.domain;
+  configs.log_dir = data.log_dir;
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
-  console.log("Writing main conf into ", filename, configs);
   Template.makedir(dirname(filename));
   writeFileSync(filename, configs, JSON_OPT);
   return configs;
