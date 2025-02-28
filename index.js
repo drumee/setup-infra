@@ -32,6 +32,7 @@ let {
   NSUPDATE_KEY,
   PRIVATE_DOMAIN,
   PRIVATE_IP4,
+  PRIVATE_IP6,
   PUBLIC_IP4,
   PUBLIC_IP6,
   STORAGE_BACKUP,
@@ -756,7 +757,7 @@ async function getAddresses(data) {
     }
   }
 
-  data.private_ip6 = args.private_ip6 || PRIVATE_IP4 || private_ip6;
+  data.private_ip6 = args.private_ip6 || PRIVATE_IP6 || private_ip6;
   data.private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
 
   data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
