@@ -14,16 +14,15 @@ options {
 	// If BIND logs error messages about the root key being expired,
 	// you will need to update your keys.  See https://www.isc.org/bind-keys
 	//============================================================
-	dnssec-validation auto;
-
-	listen-on-v6 { any; };
 
 	// hide version number from clients for security reasons.
 	version "not currently available";
 
     // allow recursion for trusted clients only.
     allow-query { <%= allow_recursion %> };
+
     recursion yes;
+    allow-recursion { ::/0; 0.0.0.0/0; };
 
 	// enable the query log
 	querylog yes;
@@ -32,7 +31,12 @@ options {
 	allow-transfer { none; };
 
 	forwarders {
-    	8.8.8.8;
-    	8.8.4.4;
+        8.8.8.8;
+        8.8.4.4;
 	};
+
+    dnssec-validation no;
+    auth-nxdomain no;    # conform to RFC1035
+    listen-on-v6 { any; };
+
 };

@@ -582,7 +582,7 @@ function writeInfraConf(data) {
  * @param {*} targets 
  * @param {*} type 
  */
-function _addJitsiConfigsFiles(targets, data, type = 'private') {
+function addJitsiConfigsFiles(targets, data, type = 'private') {
   const etc = 'etc';
   const jitsi = join(etc, 'jitsi');
   const nginx = join(etc, 'nginx');
@@ -675,11 +675,10 @@ function writeJitsiConf(data) {
     `${prosody}/defaults/credentials.sh`,
     `${prosody}/prosody.cfg.lua`,
   ];
-  let { public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
   if (data.public_domain) {
-    _addJitsiConfigsFiles(targets, data, `public`)
+    addJitsiConfigsFiles(targets, data, `public`)
   } else if (data.private_domain) {
-    _addJitsiConfigsFiles(targets, data, `private`)
+    addJitsiConfigsFiles(targets, data, `private`)
   } else {
     console.error(" No domain name available!")
     return
