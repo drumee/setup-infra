@@ -34,6 +34,7 @@ let {
   PRIVATE_IP4,
   PRIVATE_IP6,
   PUBLIC_IP4,
+  PRIVATE_IF4,
   PUBLIC_IP6,
   STORAGE_BACKUP,
   INSTANCE_TYPE
@@ -171,7 +172,7 @@ function writeTemplates(data, targets) {
  * 
  * @returns 
  */
-function isDevInstance(){
+function isDevInstance() {
   return /^dev/.test(INSTANCE_TYPE)
 }
 
@@ -526,6 +527,7 @@ function writeInfraConf(data) {
       `${infra}/routes/private.conf`,
       `${nginx}/sites-enabled/02-private.conf`,
       `${drumee}/ssl/private.conf`,
+      `${etc}/dhcp/dhclient.conf`,
       {
         tpl: `${drumee}/certs/private.cnf`,
         out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
@@ -732,6 +734,7 @@ async function getAddresses(data) {
   let os = require("os");
   let interfaces = os.networkInterfaces();
   let private_ip4, public_ip4, private_ip6, public_ip6;
+  let private_if4, private_subnet_mask, private_broadcast_address;
   for (let name in interfaces) {
     if (name == 'lo') continue;
     for (let dev of interfaces[name]) {
@@ -739,6 +742,21 @@ async function getAddresses(data) {
         case 'IPv4':
           if (isPrivate(dev.address) && !private_ip4) {
             private_ip4 = dev.address;
+            private_if4 = name;
+            private_subnet_mask = dev.netmask;
+            let a = private_ip4.split('.');
+            let b = private_subnet_mask.split('.');
+            let i = 0;
+            let br = [];
+            for (let c of b) {
+              if (c == '255') {
+                br.push(a[i])
+              }else{
+                br.push('255')
+              }
+              i++;
+            }
+            private_broadcast_address = br.join('.')
           }
           if (!isPrivate(dev.address) && !public_ip4) {
             public_ip4 = dev.address;
@@ -758,6 +776,10 @@ async function getAddresses(data) {
 
   data.private_ip6 = args.private_ip6 || PRIVATE_IP6 || private_ip6;
   data.private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
+  data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
+  data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
+  data.private_broadcast_address = private_broadcast_address || '255.255.255.255';
+  data.private_subnet_mask = private_subnet_mask || '255.255.255.0';
 
   data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
   data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
