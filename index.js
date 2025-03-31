@@ -389,6 +389,7 @@ function getSysConfigs() {
   configs.main_domain = data.domain;
   configs.domain_name = data.domain;
   configs.log_dir = data.log_dir;
+  
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
   Template.makedir(dirname(filename));
@@ -527,7 +528,10 @@ function writeInfraConf(data) {
       `${infra}/routes/private.conf`,
       `${nginx}/sites-enabled/02-private.conf`,
       `${drumee}/ssl/private.conf`,
-      `${etc}/dhcp/dhclient.conf`,
+      {
+        tpl: `${etc}/dhcp/dhclient.conf`,
+        out: `${data.data_dir}/tmp/dhclient.conf`
+      },
       {
         tpl: `${drumee}/certs/private.cnf`,
         out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
