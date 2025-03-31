@@ -529,10 +529,6 @@ function writeInfraConf(data) {
       `${nginx}/sites-enabled/02-private.conf`,
       `${drumee}/ssl/private.conf`,
       {
-        tpl: `${etc}/dhcp/dhclient.conf`,
-        out: `${data.data_dir}/tmp/dhclient.conf`
-      },
-      {
         tpl: `${drumee}/certs/private.cnf`,
         out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
       },
