@@ -12,15 +12,15 @@ map $http_upgrade $connection_upgrade {
 }
 
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
+	listen <%= http_port %> default_server;
+	listen [::]:<%= http_port %> default_server;
     server_name *.<%= jitsi_domain %>;
 	include /etc/jitsi/meet.conf;
 }
 
 server {
-	listen 443 ssl http2;
-	listen [::]:443 ssl http2;
+	listen <%= https_port %> ssl http2;
+	listen [::]:<%= https_port %> ssl http2;
 	server_name <%= jitsi_domain %>; 
 	include /etc/jitsi/ssl.conf;
 	include /etc/jitsi/meet.conf;

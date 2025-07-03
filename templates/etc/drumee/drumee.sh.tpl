@@ -7,7 +7,6 @@
 export CERTS_DIR=<%= certs_dir %>
 
 <% if (typeof(public_domain) !== "undefined" && public_domain != "" ) { %>
-
 export ACME_CA_SERVER=<%= ca_server %>
 export ACME_DIR=<%= acme_dir %>
 export ACME_EMAIL_ACCOUNT=<%= acme_email_account %>
@@ -15,7 +14,10 @@ export ACME_STORE=<%= certs_dir %>/<%= public_domain %>_ecc
 export NSUPDATE_SERVER=ns1.<%= public_domain %>
 export NSUPDATE_ZONE=<%= public_domain %>
 export DRUMEE_PUBLIC_DOMAIN=<%= public_domain %>
+<% } %>
 
+<% if (typeof(jitsi_domain) !== "undefined" && jitsi_domain != "" ) { %>
+export JITSI_DOMAIN=<%= jitsi_domain %>
 <% } %>
 
 export APP_ROUTING_MARK=<%= public_ui_root %>
@@ -24,23 +26,22 @@ export NSUPDATE_KEY=<%= nsupdate_key %>
 export DRUMEE_DB_DIR=<%= db_dir %>
 export DRUMEE_CACHE_DIR=<%= cache_dir %>
 export DRUMEE_DATA_DIR=<%= data_dir %>
+export DRUMEE_TMP_DIR=$DRUMEE_DATA_DIR/tmp
+export DRUMEE_MFS_DIR=$DRUMEE_DATA_DIR/mfs
 export DRUMEE_EXPORT_DIR=<%= export_dir %>
 export DRUMEE_IMPORT_DIR=<%= import_dir %>
 export DRUMEE_LOG_DIR=<%= log_dir %>
-export DRUMEE_MFS_DIR=<%= data_dir %>/mfs
-export DRUMEE_ROOT='/srv/drumee'
-export DRUMEE_RUNTIME_DIR=<%= runtime_dir %>
-export DRUMEE_SCHEMAS_DIR=<%= runtime_dir %>/server/schemas
-export DRUMEE_SERVER_HOME=<%= server_dir %>
-export DRUMEE_SERVER_NODE=<%= runtime_dir %>/dist/main/node_modules
-export DRUMEE_STATIC_DIR=<%= static_dir %>
+export DRUMEE_ROOT=<%= drumee_root %>
+export DRUMEE_RUNTIME_DIR=$DRUMEE_ROOT/runtime
+export DRUMEE_STATIC_DIR=$DRUMEE_ROOT/static
+export DRUMEE_UI_HOME=$DRUMEE_RUNTIME_DIR/ui
+export DRUMEE_SERVER_HOME=$DRUMEE_RUNTIME_DIR/server
+export DRUMEE_SCHEMAS_DIR=$DRUMEE_SERVER_HOME/schemas
+export DRUMEE_SERVER_NODE=$DRUMEE_SERVER_HOME/node_modules
 export DRUMEE_SYSTEM_GROUP=<%= system_group %>
 export DRUMEE_SYSTEM_USER=<%= system_user %>
-export DRUMEE_TMP_DIR=<%= data_dir %>/tmp
-export DRUMEE_UI_HOME=<%= runtime_dir %>/ui
 export DRUMEE_BACKUP_STORAGE=<%= backup_storage %>
 export DRUMEE_DB_BACKUP=<%= backup_storage %>/db
-export JITSI_DOMAIN=<%= jitsi_domain %>
 export OWN_CERTS_DIR=<%= own_certs_dir %>
 export PUBLIC_UI_ROOT=<%= public_ui_root %>
 

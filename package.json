@@ -17,7 +17,7 @@
   "author": "Somanos Sar <somanos@drumee.com>",
   "license": "AGPL V3",
   "dependencies": {
-    "@drumee/server-essentials": "^1.0.4",
+    "@drumee/server-essentials": "^1.1.31",
     "argparse": "^2.0.1",
     "crypto": "^1.0.1",
     "jsonfile": "^5.0.0",

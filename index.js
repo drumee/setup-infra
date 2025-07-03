@@ -6,9 +6,9 @@ const { join, dirname } = require("path");
 const { isString } = require("lodash");
 const { exit } = process;
 const { loadSysEnv, sysEnv, uniqueId } = require("@drumee/server-essentials");
-const { totalmem } = require('os');
+const { totalmem, userInfo } = require('os');
 const {
-  existsSync, close, writeSync, openSync, readFileSync
+  existsSync, close, writeSync, openSync, readFileSync, mkdirSync
 } = require("fs");
 const { args, hasExistingSettings } = require('./templates/utils')
 
@@ -17,21 +17,9 @@ const JSON_OPT = { spaces: 2, EOL: "\r\n" };
 const {
   ACME_DIR,
   ACME_EMAIL_ACCOUNT,
-  ADMIN_EMAIL,
-  BACKUP_STORAGE,
   CERTS_DIR,
-  DRUMEE_DATA_DIR,
-  DRUMEE_DB_DIR,
-  DRUMEE_DESCRIPTION,
   MAIL_USER,
-  MAX_BODY_SIZE,
   NSUPDATE_KEY,
-  PRIVATE_DOMAIN,
-  PRIVATE_IP4,
-  PUBLIC_DOMAIN,
-  PUBLIC_IP4,
-  PUBLIC_IP6,
-  STORAGE_BACKUP,
 } = process.env;
 
 /**
@@ -69,8 +57,7 @@ function copyFields(data, keys) {
  */
 function factory(data) {
   let route = "main";
-  let mode = "dist";
-  let base = `${data.server_dir}/${mode}/${route}/`;
+  let base = `${data.server_dir}/${route}/`;
   return {
     name: "factory",
     script: `./index.js`,
@@ -109,11 +96,10 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
     name,
     server_dir,
     runtime_dir,
-    mode,
   } = data;
 
   if (!server_dir) server_dir = join(runtime_dir, 'server');
-  let base = `${server_dir}/${mode}/${route}`;
+  let base = `${server_dir}/${route}`;
   return {
     name,
     script,
@@ -140,14 +126,15 @@ function writeTemplates(data, targets) {
     return
   }
   for (let target of targets) {
-    try{
+    try {
       if (isString(target)) {
         Template.write(data, target, target);
       } else {
         let { out, tpl } = target;
         Template.write(data, out, tpl);
-      }  
-    }catch(e){
+      }
+    } catch (e) {
+      console.error(e)
       console.error("Failed to write configs for", target)
     }
   }
@@ -160,10 +147,8 @@ function writeEcoSystem(data) {
   const ports = {
     pushPort: 23000,
     restPort: 24000,
-    mode: "dist",
     route: "main",
   };
-  console.log("AAA:167", data)
   let main = worker({
     ...data,
     ...ports,
@@ -241,11 +226,13 @@ function makeData(opt) {
     let [key, value, fallback] = row;
     if (!value) value = data[key] || fallback;
     if (value == null) continue;
-    if (!data[key]) {
+    if (isString(value)) {
       if (/.+\+$/.test(value)) {
         value = value.replace(/\+$/, data[key]);
       }
       data[key] = value.trim() || fallback;
+    } else {
+      data[key] = value
     }
   }
 
@@ -253,13 +240,15 @@ function makeData(opt) {
   data.allow_recursion = 'localhost;';
   if (data.public_ip4) {
     data.reverse_ip4 = data.public_ip4.split('.').reverse().join('.');
-  }else{
+  } else {
     data.reverse_ip4 = ""
   }
+
   if (!data.public_ip6) {
     data.public_ip6 = "";
   }
-  if(!data.storage_backup){
+
+  if (!data.storage_backup) {
     data.storage_backup = ""
   }
   return data;
@@ -271,7 +260,6 @@ function makeData(opt) {
  * @param {*} opt 
  */
 function loadEnvFile(file, opt) {
-  console.log({ file })
   let src = readJson(file);
   opt.map((r) => {
     let [key] = r;
@@ -284,47 +272,53 @@ function loadEnvFile(file, opt) {
  *
  */
 function getSysConfigs() {
-  let {
-    public_domain, private_domain, private_ip4, public_ip4, public_ip6, backup_storage
-  } = sysEnv();
   if (hasExistingSettings(Template.chroot('etc/drumee/drumee.json'))) {
     exit(0)
   }
 
-  public_domain = args.public_domain || PUBLIC_DOMAIN || public_domain;
-  private_domain = args.private_domain || PRIVATE_DOMAIN || private_domain;
-
-  public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
-  public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
-
-  private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
-  backup_storage = args.backup_storage || BACKUP_STORAGE || STORAGE_BACKUP || backup_storage;
-
-  let domain_name = public_domain || private_domain;
+  let use_email = 0;
+  if (args.public_domain) use_email = 1;
+  let domain_name = args.public_domain || args.private_domain;
   if (!domain_name) {
-    console.log("There is no domain name defined for the installation", args);
-    exit(0)
+    if (!args.localhost) {
+      console.log("There is no domain name defined for the installation", args);
+      exit(0)
+    }
   }
+
   const nsupdate_key = Template.chroot('etc/bind/keys/update.key')
   const opt = [
-    ["acme_dir", ACME_DIR],
-    ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
-    ["admin_email", ADMIN_EMAIL],
-    ["backup_storage", backup_storage, ""],
-    ["certs_dir", CERTS_DIR],
-    ["data_dir", DRUMEE_DATA_DIR, '/data'],
-    ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
-    ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],
-    ["max_body_size", MAX_BODY_SIZE, '10G'],
     ["nsupdate_key", NSUPDATE_KEY, nsupdate_key],
-    ["private_domain", private_domain],
-    ["private_ip4", private_ip4],
-    ["public_domain", public_domain],
-    ["public_ip4", public_ip4],
-    ["public_ip6", public_ip6],
-    ["storage_backup", backup_storage], /** Legacy */
+    ["admin_email", args.admin_email],
+    ["credential_dir", Template.chroot('etc/drumee/credential')],
+    ["domain_desc", args.description, 'My Drumee Box'],
+    ["max_body_size", args.max_body_size, '10G'],
+    ["drumee_root", args.drumee_root, "/var/lib/drumee"],
+    ["use_email", use_email, 0],
+    ["db_dir", args.db_dir, '/var/lib/mysql'],
+    ["backup_storage", args.backup_storage, ""],
+    ["data_dir", args.data_dir, '/var/lib/drumee/data'],
+    ["http_port", args.http_port, 80],
+    ["https_port", args.https_port, 443],
   ]
+
+  if (!args.localhost) {
+    opt.push(
+      ["private_ip4", args.private_ip4],
+      ["public_domain", args.public_domain],
+      ["public_ip4", args.public_ip4],
+      ["public_ip6", args.public_ip6],
+      ["storage_backup", args.backup_storage], /** Legacy */
+      ["private_domain", args.private_domain],
+      ["acme_dir", ACME_DIR],
+      ["acme_email_account", ACME_EMAIL_ACCOUNT, args.admin_email],
+      ["certs_dir", CERTS_DIR],
+    )
+
+  }
+
   let data = makeData(opt);
+
   if (!data) {
     exit(1);
   }
@@ -344,11 +338,28 @@ function getSysConfigs() {
   if (args.readonly) {
     return configs;
   }
+
   configs.socketPath = getSocketPath();
+  configs.runtime_dir = join(configs.drumee_root, 'runtime');
+  configs.server_dir = join(configs.runtime_dir, 'server');
+  configs.server_base = configs.server_dir;
+  configs.server_home = join(configs.server_base, 'main');
+  configs.server_location = configs.server_home;
+
+  //console.log(configs)
+  configs.ui_dir = join(configs.runtime_dir, 'ui');
+  configs.ui_base = join(configs.ui_dir, 'main');
+  configs.ui_home = configs.ui_base;
+  configs.ui_location = configs.ui_base;
+
+  configs.tmp_dir = join(configs.runtime_dir, 'tmp');
+  configs.static_dir = join(configs.runtime_dir, 'static');
+
   let filename = Template.chroot("etc/drumee/drumee.json");
   console.log("Writing main conf into drumee.json", filename);
   Template.makedir(dirname(filename));
   writeFileSync(filename, configs, JSON_OPT);
+  console.log(configs)
   return configs;
 }
 
@@ -419,40 +430,60 @@ function getDkim(file) {
  *
  */
 function writeInfraConf(data) {
-  writeEcoSystem(data);
+
   const etc = 'etc';
   const nginx = join(etc, 'nginx');
   const drumee = join(etc, 'drumee');
   const bind = join(etc, 'bind');
   const libbind = join('var', 'lib', 'bind');
-  const postfix = join(etc, 'postfix',);
+  const postfix = join(etc, 'postfix');
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
   const { public_domain, private_domain } = data;
   let targets = [
-
-    // Nginx 
-
-    // Drumee 
     `${drumee}/drumee.sh`,
-    `${drumee}/conf.d/conference.json`,
     `${drumee}/conf.d/drumee.json`,
     `${drumee}/conf.d/exchange.json`,
     `${drumee}/conf.d/myDrumee.json`,
-    `${drumee}/conf.d/conference.json`,
     `${drumee}/conf.d/drumee.json`,
     `${drumee}/conf.d/myDrumee.json`,
 
     `${infra}/mfs.conf`,
     `${infra}/routes/main.conf`,
     `${infra}/internals/accel.conf`,
-    `${bind}/named.conf.log`,
-    `${bind}/named.conf.options`,
-    `${mariadb}/50-server.cnf`,
-    `${mariadb}/50-client.cnf`,
   ];
 
+  if (args.localhost) {
+    let { username } = userInfo();
+    let system_group = username;
+    if (username = 'root') {
+      username = data.system_user || 'www-data';
+      system_group = data.system_group || 'www-data';
+    }
+    data.system_user = username;
+    data.system_group = system_group;
+    targets.push(`${nginx}/sites-enabled/localhost.conf`)
+    let dir = join(args.drumee_root, 'cache', 'localhost')
+    mkdirSync(dir, { recursive: true });
+    if (args.db_dir != '/var/lib/mysql') {
+      targets.push(
+        `${mariadb}/50-server.cnf`,
+        `${mariadb}/50-client.cnf`,
+      )
+    }
+  } else {
+    targets.push(
+      `${bind}/named.conf.log`,
+      `${bind}/named.conf.options`,
+      `${mariadb}/50-server.cnf`,
+      `${mariadb}/50-client.cnf`,
+    )
+  }
+
+  writeEcoSystem(data);
   if (data.public_ip4 && public_domain) {
+    let dir = join(args.drumee_root, 'cache', public_domain)
+    mkdirSync(dir, { recursive: true });
     targets.push(
       `${nginx}/sites-enabled/public.conf`,
       `${drumee}/ssl/public.conf`,
@@ -479,46 +510,51 @@ function writeInfraConf(data) {
   }
 
   if (data.private_ip4 && private_domain) {
+    let dir = join(args.drumee_root, 'cache', private_domain)
+    mkdirSync(dir, { recursive: true });
     targets.push(
       `${nginx}/sites-enabled/private.conf`,
       `${drumee}/ssl/private.conf`,
       `${bind}/named.conf.private`,
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
-      { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
+      { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` },
     )
   }
 
+
   writeTemplates(data, targets);
 
-  writeCredentials("postfix", {
-    host: 'localhost',
-    user: data.mail_user,
-    password: data.mail_password,
-  })
+  if (!args.localhost) {
+    writeCredentials("postfix", {
+      host: 'localhost',
+      user: data.mail_user,
+      password: data.mail_password,
+    })
 
-  writeCredentials("db", {
-    password: uniqueId(),
-    user: "drumee-app",
-    host: "localhost",
-  })
+    writeCredentials("db", {
+      password: uniqueId(),
+      user: "drumee-app",
+      host: "localhost",
+    })
 
-  writeCredentials("email", {
-    host: `localhost`,
-    port: 587,
-    secure: false,
-    auth: {
-      user: `butler@${public_domain}`,
-      pass: uniqueId()
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  })
+    writeCredentials("email", {
+      host: `localhost`,
+      port: 587,
+      secure: false,
+      auth: {
+        user: `butler@${public_domain}`,
+        pass: uniqueId()
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    })
 
-  copyConfigs([
-    'etc/postfix/master.cf',
-    'etc/cron.d/drumee',
-  ])
+    copyConfigs([
+      'etc/postfix/master.cf',
+      'etc/cron.d/drumee',
+    ])
+  }
 }
 
 /**
@@ -585,7 +621,7 @@ function makeConfData(data) {
     jvb_password: randomString(),
     app_id: randomString(),
     app_password: randomString(),
-    ui_base: join(data.ui_base, 'dist', 'main'),
+    ui_base: join(data.ui_base, 'main'),
     location: '/-/',
     pushPort: 23000,
     restPort: 24000,
@@ -647,6 +683,7 @@ async function getAddresses(data) {
 
   return data;
 }
+
 /**
  *
  * @returns
@@ -660,7 +697,7 @@ function main() {
     data = { ...data, ...makeConfData(data) };
     data = await getAddresses(data);
     let func = [];
-    if (args.only_infra || args.no_jitsi) {
+    if (args.only_infra || args.no_jitsi || args.localhost || data.local_domain) {
       func.push(writeInfraConf)
     } else {
       func = [writeInfraConf, writeJitsiConf];
