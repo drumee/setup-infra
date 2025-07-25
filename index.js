@@ -12,6 +12,7 @@ const {
 } = require("fs");
 const { args, hasExistingSettings } = require('./templates/utils')
 
+
 const JSON_OPT = { spaces: 2, EOL: "\r\n" };
 
 const {
@@ -100,7 +101,8 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
 
   if (!server_dir) server_dir = join(runtime_dir, 'server');
   let base = `${server_dir}/${route}`;
-  return {
+  let iname = name.replace('/', '-');
+  let opt = {
     name,
     script,
     cwd: base,
@@ -113,8 +115,40 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
     },
     dependencies: [`pm2-logrotate`],
     exec_mode,
-    instances
+    instances,
+    out_file: join(data.log_dir, `log-${iname}.log`),
+    error_file: join(data.log_dir, `error-${iname}.log`),
+    pm2_log_routes: {
+      rotateInterval: '0 0 * * *', // Rotate daily at midnight
+      rotateModule: true,
+      max_size: '10M', // Rotate when log reaches 10MB
+      retain: 30 // Keep 30 rotated logs
+    }
   };
+  if (args.watch_dirs) {
+    let dirs = args.watch_dirs.split(/,+/);
+    if (dirs.length) {
+      opt.watch = dirs;
+      opt.watch_delay = args.watch_delay;
+      if (args.watch_symlinks) {
+        opt.watch_options = {
+          followSymlinks: true
+        }
+      } else {
+        opt.watch_options = {
+          followSymlinks: false
+        }
+      }
+      if (args.watch_ignore) {
+        let ignored = args.watch_ignore.split(/,+/);
+        if (ignored.length) {
+          opt.ignore_watch = ignored;
+        }
+      }
+    }
+  }
+  return opt;
+
 }
 
 /***
@@ -296,10 +330,14 @@ function getSysConfigs() {
     ["drumee_root", args.drumee_root, "/var/lib/drumee"],
     ["use_email", use_email, 0],
     ["db_dir", args.db_dir, '/var/lib/mysql'],
+    ["log_dir", args.log_dir, '/var/log/drumee'],
+    ["system_user", args.system_user, 'www-data'],
+    ["system_group", args.system_group, 'www-data'],
     ["backup_storage", args.backup_storage, ""],
     ["data_dir", args.data_dir, '/var/lib/drumee/data'],
     ["http_port", args.http_port, 80],
     ["https_port", args.https_port, 443],
+    ["verbosity", args.verbosity, 2],
   ]
 
   if (!args.localhost) {
@@ -448,9 +486,13 @@ function writeInfraConf(data) {
     `${drumee}/conf.d/drumee.json`,
     `${drumee}/conf.d/myDrumee.json`,
 
+    `${nginx}/nginx.conf`,
+
     `${infra}/mfs.conf`,
     `${infra}/routes/main.conf`,
     `${infra}/internals/accel.conf`,
+    `${mariadb}/50-server.cnf`,
+    `${mariadb}/50-client.cnf`,
   ];
 
   if (args.localhost) {
@@ -465,18 +507,10 @@ function writeInfraConf(data) {
     targets.push(`${nginx}/sites-enabled/localhost.conf`)
     let dir = join(args.drumee_root, 'cache', 'localhost')
     mkdirSync(dir, { recursive: true });
-    if (args.db_dir != '/var/lib/mysql') {
-      targets.push(
-        `${mariadb}/50-server.cnf`,
-        `${mariadb}/50-client.cnf`,
-      )
-    }
   } else {
     targets.push(
       `${bind}/named.conf.log`,
       `${bind}/named.conf.options`,
-      `${mariadb}/50-server.cnf`,
-      `${mariadb}/50-client.cnf`,
     )
   }
 

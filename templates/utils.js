@@ -60,6 +60,18 @@ parser.add_argument("--outdir", {
   help: "If set, takes precedent on chroot. Output root. Defaulted to /",
 });
 
+parser.add_argument("--log-dir", {
+  type: String,
+  default: '/var/log/drumee',
+  help: "Drumee server log location",
+});
+
+parser.add_argument("--verbosity", {
+  type: "int",
+  default: 2,
+  help: "Server log level",
+});
+
 parser.add_argument("--public-domain", {
   type: String,
   default: PUBLIC_DOMAIN,
@@ -135,6 +147,42 @@ parser.add_argument("--db-dir", {
   type: String,
   default: DRUMEE_DB_DIR || "/var/lib/mysql",
   help: "Partition or directory dedicated to store drumee database",
+});
+
+parser.add_argument("--system-user", {
+  type: String,
+  default: "www-data",
+  help: "System user used to run Drumee",
+});
+
+parser.add_argument("--system-group", {
+  type: String,
+  default: "www-data",
+  help: "System group used to run Drumee",
+});
+
+parser.add_argument("--watch-dirs", {
+  type: String,
+  default: null,
+  help: "pm2 watch directories",
+});
+
+parser.add_argument("--watch-delay", {
+  type: 'int',
+  default: 1000,
+  help: "pm2 watch delay",
+});
+
+parser.add_argument("--watch-symlinks", {
+  type: 'int',
+  default: 0,
+  help: "pm2 watch delay",
+});
+
+parser.add_argument("--watch-ignore", {
+  type: String,
+  default: null,
+  help: "pm2 ignore directories",
 });
 
 parser.add_argument("--drumee-root", {

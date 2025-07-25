@@ -33,7 +33,7 @@ export DRUMEE_IMPORT_DIR=<%= import_dir %>
 export DRUMEE_LOG_DIR=<%= log_dir %>
 export DRUMEE_ROOT=<%= drumee_root %>
 export DRUMEE_RUNTIME_DIR=$DRUMEE_ROOT/runtime
-export DRUMEE_STATIC_DIR=$DRUMEE_ROOT/static
+export DRUMEE_STATIC_DIR=$DRUMEE_RUNTIME_DIR/static
 export DRUMEE_UI_HOME=$DRUMEE_RUNTIME_DIR/ui
 export DRUMEE_SERVER_HOME=$DRUMEE_RUNTIME_DIR/server
 export DRUMEE_SCHEMAS_DIR=$DRUMEE_SERVER_HOME/schemas
