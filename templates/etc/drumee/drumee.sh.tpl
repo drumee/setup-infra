@@ -63,3 +63,4 @@ export DRUMEE_DB_BACKUP=<%= backup_storage %>/db
 export PUBLIC_UI_ROOT=<%= public_ui_root %>
 export PUBLIC_HTTP_PORT=<%= public_http_port %>
 export PUBLIC_HTTPS_PORT=<%= public_https_port %>
+export ACME_ENV_FILE=<%= acme_env_file %>

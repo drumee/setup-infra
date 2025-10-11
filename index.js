@@ -17,6 +17,7 @@ const JSON_OPT = { spaces: 2, EOL: "\r\n" };
 let {
   ACME_DIR,
   ACME_EMAIL_ACCOUNT,
+  ACME_ENV_FILE,
   ADMIN_EMAIL,
   BACKUP_STORAGE,
   CERTS_DIR,
@@ -342,6 +343,7 @@ function getSysConfigs() {
   const opt = [
     ["acme_dir", ACME_DIR],
     ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
+    ["acme_env_file", ACME_ENV_FILE],
     ["admin_email", ADMIN_EMAIL],
     ["backup_storage", backup_storage, ""],
     ["certs_dir", CERTS_DIR],
