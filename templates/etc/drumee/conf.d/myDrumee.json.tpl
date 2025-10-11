@@ -9,7 +9,7 @@
     "zh"
   ],
   "verbosity": 2,
-  "useEmail":1,
+  "useEmail":<%= use_email %>,
   "quota": {
     "watermark": "<%= quota_watermark %>"
   }

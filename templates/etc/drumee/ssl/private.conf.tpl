@@ -4,7 +4,5 @@
 # Date : <%= date %>
 # -------------------------------------------------------------
 
-export JICOFO_PASSWORD=<%= jicofo_password %>
-export JVB_PASSWORD=<%= jvb_password %>
-export APP_ID=<%= app_id %>
-export APP_PASSWORD=<%= app_password %>
+ssl_certificate_key <%= certs_dir %>/<%= private_domain %>_ecc/<%= private_domain %>.key;
+ssl_trusted_certificate <%= certs_dir %>/<%= private_domain %>_ecc/<%= private_domain %>.cer;

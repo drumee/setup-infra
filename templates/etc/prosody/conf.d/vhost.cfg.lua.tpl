@@ -53,8 +53,8 @@ VirtualHost "<%= jitsi_domain %>"
 VirtualHost "guest.<%= jitsi_domain %>"
     authentication = "anonymous"
     ssl = {
-        key = "/usr/share/acme/certs/jit.drumee.io_ecc/jit.drumee.io.key";
-        certificate = "/usr/share/acme/certs/jit.drumee.io_ecc/jit.drumee.io.cer";
+        key = "/usr/share/acme/certs/<%= jitsi_domain %>_ecc/<%= jitsi_domain %>.key";
+        certificate = "/usr/share/acme/certs/<%= jitsi_domain %>_ecc/<%= jitsi_domain %>.cer";
     }
     modules_enabled = {
         "bosh";
@@ -71,13 +71,13 @@ VirtualHost "guest.<%= jitsi_domain %>"
         "av_moderation";
  	    "turncredentials";
     }
-    main_muc = "muc.jit.drumee.io"
-    lobby_muc = "lobby.jit.drumee.io"
-    breakout_rooms_muc = "breakout.jit.drumee.io"
-    speakerstats_component = "speakerstats.jit.drumee.io"
-    conference_duration_component = "conferenceduration.jit.drumee.io"
-    end_conference_component = "endconference.jit.drumee.io"
-    av_moderation_component = "avmoderation.jit.drumee.io"
+    main_muc = "muc.<%= jitsi_domain %>"
+    lobby_muc = "lobby.<%= jitsi_domain %>"
+    breakout_rooms_muc = "breakout.<%= jitsi_domain %>"
+    speakerstats_component = "speakerstats.<%= jitsi_domain %>"
+    conference_duration_component = "conferenceduration.<%= jitsi_domain %>"
+    end_conference_component = "endconference.<%= jitsi_domain %>"
+    av_moderation_component = "avmoderation.<%= jitsi_domain %>"
     turncredentials_secret = "<%= turn_sercret %>"
     c2s_require_encryption = false
 

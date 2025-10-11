@@ -1,4 +1,12 @@
 #!/bin/bash
+if [ "$DRUMEE_DOMAIN_NAME" = "" ]; then
+  echo "Public domain name not found. Will run only on private mode."
+  exit 0
+fi
+if [ "$OWN_CERTS_DIR" != "" ]; then
+  echo "OWN_CERTS_DIR was set to $OWN_CERTS_DIR. This means you will have to complete settings later."
+  exit 0
+fi
 
 echo "Configuring certificates..."
 #-------------------
@@ -6,8 +14,10 @@ function make_certs(){
   sum=0
   dom=$1
   echo Generating "${dom}" cetificates...
-  while [ ! -f ${ACME_CERTS_DIR}/${dom}_ecc/fullchain.cer ]; do
-    ./acme.sh --issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate
+  OPTIONS="--issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $CERTS_DIR --dns dns_nsupdate"
+  ./acme.sh $OPTIONS
+  while [ ! -f ${CERTS_DIR}/${dom}_ecc/fullchain.cer ]; do
+    ./acme.sh $OPTIONS
     if [ $? = "0" ]; then
       echo Certificate have been sucessfully created.
     else
@@ -15,8 +25,9 @@ function make_certs(){
       sleep 5
     fi
     if [ "$sum" -gt "10" ]; then
-      echo Failed to create certifiicates. Please rune manually
-      echo $ACME_DIR/acme.sh --issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR --dns dns_nsupdate
+      echo Failed to create certifiicates. Please run manually
+      echo $ACME_DIR/acme.sh  $OPTIONS
+      return
     fi
     sum=$(expr 1 + $sum)
   done
@@ -49,7 +60,7 @@ cd $ACME_DIR
 
 failed=0
 
-./acme.sh --register-account -m $ACME_EMAIL_ACCOUNT --home $ACME_DIR  --config-home $ACME_DIR/configs --cert-home $ACME_CERTS_DIR
+./acme.sh --register-account -m $ACME_EMAIL_ACCOUNT --home $ACME_DIR  --config-home $ACME_DIR/configs --cert-home $CERTS_DIR
 
 
 make_certs $DRUMEE_DOMAIN_NAME
@@ -61,8 +72,8 @@ usermod -a -G $DRUMEE_SYSTEM_GROUP jicofo
 usermod -a -G $DRUMEE_SYSTEM_GROUP turnserver
 usermod -a -G $DRUMEE_SYSTEM_GROUP postfix
 
-if [ -d "$ACME_CERTS_DIR" ]; then
-  chown -R $DRUMEE_SYSTEM_USER:$DRUMEE_SYSTEM_GROUP $ACME_CERTS_DIR 
+if [ -d "$CERTS_DIR" ]; then
+  chown -R $DRUMEE_SYSTEM_USER:$DRUMEE_SYSTEM_GROUP $CERTS_DIR 
 fi
 
 echo "ACME has been successfuly installed!"

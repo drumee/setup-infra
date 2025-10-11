@@ -1,6 +1,6 @@
 {
-  "name": "@drumee/infra-setup",
-  "version": "1.0.1",
+  "name": "@drumee/setup-infra",
+  "version": "1.0.14",
   "description": "Drumee Infrastructure Setup Utilities",
   "main": "index.js",
   "scripts": {
@@ -9,20 +9,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:drumee/infra-setup.git"
+    "url": "git@github.com:drumee/setup-infra.git"
   },
   "bugs": {
-    "url": "https://github.com/drumee/infra-setup/issues"
+    "url": "https://github.com/drumee/setup-infra/issues"
   },
   "author": "Somanos Sar <somanos@drumee.com>",
   "license": "AGPL V3",
   "dependencies": {
+<<<<<<< HEAD
     "@drumee/infra-setup": "^1.0.0",
     "@drumee/server-essentials": "^1.1.20",
+=======
+    "@drumee/server-essentials": "^1.0.4",
+    "argparse": "^2.0.1",
+>>>>>>> ffd93fb6d0e3c7e79e58556846d8f3aceb77c6f5
     "crypto": "^1.0.1",
     "jsonfile": "^5.0.0",
     "lodash": "^4.17.21",
-    "minimist": "^1.2.8",
     "ovh": "^2.0.3",
     "private-ip": "^3.0.1",
     "shelljs": "^0.8.5",

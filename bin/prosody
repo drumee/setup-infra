@@ -11,7 +11,7 @@ function setup_dirs() {
   ca_dir=/usr/local/share/ca-certificates
   mkdir -p $ca_dir
 
-  cert_file="${ACME_CERTS_DIR}/${JITSI_DOMAIN}_ecc/${JITSI_DOMAIN}"
+  cert_file="${CERTS_DIR}/${JITSI_DOMAIN}_ecc/${JITSI_DOMAIN}"
   target="${ca_dir}/auth.${JITSI_DOMAIN}"
 
   if [ -f "${cert_file}.cer" ]; then
@@ -43,18 +43,34 @@ function addUser() {
   prosodyctl register ${user} ${host} $secret
 }
 
+#-------------------
+# Sometime service prosody restart is not working
+function restart_prosody() {
+  if [ -f /var/run/prosody/prosody.pid ]; then
+    set +e
+    ppid=$(cat /var/run/prosody/prosody.pid)
+    echo "Prosody PID =$ppid"
+    if [ "$ppid" != "" ]; then
+      kill $ppid;
+      sleep 3
+      service prosody start
+    else
+      service prosody restart
+    fi
+  else
+    service prosody restart
+  fi
+}
 
 #-------------------
 function setup_prosody() {
   echo Configuring prosody creadentials
 
   # Ensure prosody start before using prosodyctl
-  service prosody restart
-  host="auth.${JITSI_DOMAIN}"
-  #jic_pw=$(grep password /etc/jitsi/jicofo/jicofo.conf | awk '{print $3}' | sed -e s/\"//g)
-  #jvb_pw=$(grep PASSWORD /etc/jitsi/videobridge/jvb.conf | awk '{print $3}' | sed -e s/\"//g)
-  addUser focus $JICOFO_PASSWORD $host
-  addUser jvb $JVB_PASSWORD $host
+  restart_prosody
+  auth_host="auth.${JITSI_DOMAIN}"
+  addUser focus $JICOFO_PASSWORD $auth_host
+  addUser jvb $JVB_PASSWORD $auth_host
   addUser $APP_ID $APP_PASSWORD $JITSI_DOMAIN
 
   pub_ip=$(grep public-address /etc/jitsi/videobridge/jvb.conf | awk '{print $3}' | sed -e s/\"//g)
@@ -64,9 +80,8 @@ function setup_prosody() {
       echo "${pub_ip} ${JITSI_DOMAIN}" >>/etc/hosts
     fi
   fi
-  echo Subscribing roster command for focus."${JITSI_DOMAIN}" focus@${host}
-  prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
-  #echo prosodyctl mod_roster_command subscribe focus."${JITSI_DOMAIN}" focus@${host}
+  echo prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${auth_host}"
+  prosodyctl mod_roster_command subscribe "focus.${JITSI_DOMAIN}" "focus@${auth_host}"
   echo Prosody creadentials done
 }
 
@@ -80,46 +95,7 @@ function clean_vendor_files() {
   rm -f /etc/prosody/conf.avail/jaas.cfg.lua
   rm -f /etc/prosody/conf.avail/jitsi.meet.cfg.lua
   rm -rf /etc/prosody/certs/*
+  rm -rf /var/lib/prosody/*jitsi.meet.*
 }
 
-#-------------------
-function restart_prosody() {
-  if [ -f /var/run/prosody/prosody.pid ]; then
-    set +e
-    ppid=$(cat /var/run/prosody/prosody.pid)
-    echo "Prosody PID =$ppid"
-  fi
-}
 
-#-------------------
-function write_version() {
-  echo Creating versions file
-  mkdir -p /etc/jitsi
-  dest=/etc/jitsi/versions.js
-  echo "module.exports={" >$dest
-  dpkg -l | egrep "ii +jitsi" | awk '{print  "\"", $2, "\"", ":", "\"", $3, "\"", ","}' | sed -E "s/ +//g" >>$dest
-  echo "}" >>$dest
-  echo Versions file created
-}
-
-#-------------------
-function install_jitsi() {
-  # Jitsi package
-  echo Checking jitsi-meet packages
-  installed=$(dpkg -l | egrep "^ii +jitsi-meet ")
-  if [ "$installed" = "" ]; then
-    key=/etc/apt/trusted.gpg.d/jitsi-key.gpg
-    if [ ! -f $key ]; then
-      curl -sS https://download.jitsi.org/jitsi-key.gpg.key | gpg --dearmor | tee j$key >/dev/null 2>&1
-    fi
-
-    source=/etc/apt/sources.list.d/jitsi-stable.list
-    if [ ! -f $jitsi_source ]; then
-      echo "deb https://download.jitsi.org stable/" | tee $source
-      apt update
-    fi
-    DEBIAN_FRONTEND="noninteractive" apt install -y jitsi-meet
-  else
-    echo "Jitsi package alreay installed. Skipped."
-  fi
-}
