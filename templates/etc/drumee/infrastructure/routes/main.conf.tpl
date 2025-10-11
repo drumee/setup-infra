@@ -6,7 +6,7 @@
 
 
 location <%= location %>app/ {
-  alias /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/app/;
+  alias <%= drumee_root %>/runtime/ui/<%= endpoint_name %>/app/;
   add_header Cache-Control max-age=31536000;
   add_header Access-Control-Allow-Origin <%= domain %>;
   fastcgi_hide_header Set-Cookie;
@@ -15,7 +15,7 @@ location <%= location %>app/ {
 
 # Frontend application assets
 location <%= location %>api/ {
-  alias /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/api/;
+  alias <%= drumee_root %>/runtime/ui/<%= endpoint_name %>/api/;
   add_header Cache-Control max-age=31536000;
   add_header Access-Control-Allow-Origin <%= domain %>;
   fastcgi_hide_header Set-Cookie;
@@ -23,8 +23,9 @@ location <%= location %>api/ {
 }
 
 # Frontend application assets
-location <%= location %>plugins/ {
-  alias /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/plugins/;
+location 
+plugins/ {
+  alias <%= drumee_root %>/runtime/ui/<%= endpoint_name %>/plugins/;
   add_header Cache-Control max-age=31536000;
   add_header Access-Control-Allow-Origin <%= domain %>;
   fastcgi_hide_header Set-Cookie;
@@ -34,7 +35,7 @@ location <%= location %>plugins/ {
 
 # Frontend application templates
 location <%= location %>bb-templates/ {
-  alias  /srv/drumee/runtime/ui/dist/<%= endpoint_name %>/bb-templates/;
+  alias  <%= drumee_root %>/runtime/ui/<%= endpoint_name %>/bb-templates/;
   add_header Cache-Control max-age=31536000;
   add_header Access-Control-Allow-Origin *;
   fastcgi_hide_header Set-Cookie;
@@ -52,9 +53,12 @@ location <%= location %> {
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-IP       $remote_addr;
+    proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Connecting-IP $remote_addr;
-    proxy_set_header Host       	$host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;  # The port Nginx is listening on
+    proxy_set_header X-Original-Port $http_host;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;
     break;
@@ -66,9 +70,12 @@ location <%= location %> {
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-IP       $remote_addr;
+    proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Connecting-IP $remote_addr;
-    proxy_set_header Host       	$host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;  # The port Nginx is listening on
+    proxy_set_header X-Original-Port $http_host;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;
     break;
@@ -119,7 +126,7 @@ location <%= location %> {
     fastcgi_hide_header Set-Cookie;
     add_header Cache-Control max-age=31536000;
     add_header Access-Control-Allow-Origin <%= domain %>;
-    rewrite /somanos/(.+)$ /-/svc/media.raw&p=$1&d=inline;
+    rewrite /<%= endpoint_name %>/(.+)$ /-/svc/media.raw&p=$1&d=inline;
     break;
   }
 
@@ -131,10 +138,13 @@ location <%= location %> {
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-IP       $remote_addr;
+    proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Connecting-IP $remote_addr;
-    proxy_set_header Host       	$host;
-    proxy_set_header Referer       	$http_referer;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;  # The port Nginx is listening on
+    proxy_set_header X-Original-Port $http_host;
+    proxy_set_header Referer $http_referer;
+    proxy_set_header X-Forwarded-Proto $scheme;
     add_header Access-Control-Allow-Credentials true;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;

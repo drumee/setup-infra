@@ -59,7 +59,7 @@ bind-address            = 127.0.0.1
 # and when running legacy init error logging goes to syslog due to
 # /etc/mysql/conf.d/mariadb.conf.d/50-mysqld_safe.cnf
 # Enable this if you want to have error logging into a separate file
-#log_error = /var/log/mysql/error.log
+log_error = /var/log/mysql/error.log
 # Enable the slow query log to see queries with especially long duration
 #log_slow_query_file    = /var/log/mysql/mariadb-slow.log
 #log_slow_query_time    = 10
@@ -92,6 +92,7 @@ expire_logs_days        = 10
 
 # MySQL/MariaDB default is Latin1, but in Debian we rather default to the full
 # utf8 4-byte character set. See also client.cnf
+character-set-client-handshake = FALSE
 character-set-server  = utf8mb4
 collation-server      = utf8mb4_general_ci
 

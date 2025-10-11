@@ -10,16 +10,16 @@
 
 proxy_cache_path <%= cache_dir %>/<%= private_domain %> levels=1:2 keys_zone=<%= private_domain %>_keys_zone:10m max_size=10g inactive=60m;
 server {
-	listen 80;
-	listen [::]:80;
+	listen <%= http_port %>;
+	listen [::]:<%= http_port %>;
 	server_name <%= private_domain %>; 
 	location / {
 		return  301 https://$host$request_uri;
 	}
 }
 server {
-	listen 443 ssl;
-	listen [::]:443 ssl;	
+	listen <%= https_port %> ssl;
+	listen [::]:<%= https_port %> ssl;	
 	#
 	root <%= server_dir %>;
 	server_name <%= private_domain %>; 

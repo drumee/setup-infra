@@ -5,8 +5,7 @@ const { env } = process;
 const { template, isEmpty } = require("lodash");
 
 const { resolve, join, dirname } = require("path");
-const { args } = require('./utils')
-
+const { args} = require('./utils')
 /**
  * 
  * @param {*} p 
@@ -105,5 +104,5 @@ module.exports = {
   write,
   chroot,
   render,
-  makedir
+  makedir,
 };
