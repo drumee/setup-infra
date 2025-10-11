@@ -13,8 +13,13 @@ echo "Configuring certificates..."
 function make_certs(){
   sum=0
   dom=$1
+  method=dns_nsupdate
+  if [ "$2" != "" -a -f "$2" ]; then
+    source $2 # source env filen
+    method=dns_$ACME_PROVIDER # https://github.com/acmesh-official/acme.sh/wiki/dnsapi
+  fi
   echo Generating "${dom}" cetificates...
-  OPTIONS="--issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $CERTS_DIR --dns dns_nsupdate"
+  OPTIONS="--issue -d $dom -d "*.${dom}" --home $ACME_DIR --config-home $ACME_DIR/configs --cert-home $CERTS_DIR --dns ${method}"
   ./acme.sh $OPTIONS
   while [ ! -f ${CERTS_DIR}/${dom}_ecc/fullchain.cer ]; do
     ./acme.sh $OPTIONS
@@ -77,8 +82,8 @@ failed=0
 ./acme.sh --register-account -m $ACME_EMAIL_ACCOUNT --home $ACME_DIR  --config-home $ACME_DIR/configs --cert-home $CERTS_DIR
 
 
-make_certs $DRUMEE_DOMAIN_NAME
-make_certs $JITSI_DOMAIN
+make_certs $DRUMEE_DOMAIN_NAME $ACME_ENV_FILE
+make_certs $JITSI_DOMAIN $ACME_ENV_FILE
 
 usermod -a -G $DRUMEE_SYSTEM_GROUP prosody
 usermod -a -G $DRUMEE_SYSTEM_GROUP jvb
