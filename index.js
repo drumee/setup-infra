@@ -532,15 +532,17 @@ function writeInfraConf(data) {
       `${infra}/mfs.private.conf`,
       `${infra}/routes/private.conf`,
       `${nginx}/sites-enabled/02-private.conf`,
-      `${drumee}/ssl/private.conf`,
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
       { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
     )
     if (!own_certs_dir) {
-      targets.push({
-        tpl: `${drumee}/certs/private.cnf`,
-        out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
-      })
+      targets.push(
+        `${drumee}/ssl/private.conf`,
+        {
+          tpl: `${drumee}/certs/private.cnf`,
+          out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
+        }
+      )
     }
   }
 
