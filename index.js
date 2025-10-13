@@ -475,7 +475,7 @@ function writeInfraConf(data) {
   const postfix = join(etc, 'postfix',);
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
-  let { certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
+  let { certs_dir, own_certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
   let targets = [
 
     // Nginx 
@@ -530,16 +530,18 @@ function writeInfraConf(data) {
       `${infra}/routes/private.conf`,
       `${nginx}/sites-enabled/02-private.conf`,
       `${drumee}/ssl/private.conf`,
-      {
-        tpl: `${drumee}/certs/private.cnf`,
-        out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
-      },
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
       { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
     )
+    if (!own_certs_dir) {
+      targets.push({
+        tpl: `${drumee}/certs/private.cnf`,
+        out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
+      })
+    }
   }
 
-  if (jitsi_private_domain) {
+  if (jitsi_private_domain && !own_certs_dir)) {
     targets.push(
       {
         tpl: `${drumee}/certs/jitsi.private.cnf`,
