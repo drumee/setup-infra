@@ -49,6 +49,7 @@ if (PUBLIC_DOMAIN) {
 }
 
 PRIVATE_DOMAIN = PRIVATE_DOMAIN || 'local.drumee';
+if (OWN_CERTS_DIR) PRIVATE_DOMAIN = null;
 DRUMEE_HTTPS_PORT = DRUMEE_HTTPS_PORT || 443;
 DRUMEE_LOCAL_PORT = DRUMEE_LOCAL_PORT || 8443;
 DRUMEE_HTTP_PORT = DRUMEE_HTTP_PORT || 80;
@@ -497,6 +498,8 @@ function writeInfraConf(data) {
   if (own_certs_dir) {
     certs_dir = own_certs_dir;
     data.certs_dir = certs_dir;
+    private_domain = null;
+    jitsi_private_domain = null;
   }
   if (data.public_ip4 && public_domain) {
     targets.push(
@@ -532,21 +535,17 @@ function writeInfraConf(data) {
       `${infra}/mfs.private.conf`,
       `${infra}/routes/private.conf`,
       `${nginx}/sites-enabled/02-private.conf`,
+      `${drumee}/ssl/private.conf`,
+      {
+        tpl: `${drumee}/certs/private.cnf`,
+        out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
+      },
       { tpl: `${libbind}/private.tpl`, out: `${libbind}/${private_domain}` },
       { tpl: `${libbind}/private-reverse.tpl`, out: `${libbind}/${data.private_ip4}` }
     )
-    if (!own_certs_dir) {
-      targets.push(
-        `${drumee}/ssl/private.conf`,
-        {
-          tpl: `${drumee}/certs/private.cnf`,
-          out: `${certs_dir}/${private_domain}_ecc/${private_domain}.cnf`
-        }
-      )
-    }
   }
 
-  if (jitsi_private_domain && !own_certs_dir) {
+  if (jitsi_private_domain) {
     targets.push(
       {
         tpl: `${drumee}/certs/jitsi.private.cnf`,
