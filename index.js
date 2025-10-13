@@ -31,6 +31,7 @@ let {
   MAIL_USER,
   MAX_BODY_SIZE,
   NSUPDATE_KEY,
+  OWN_CERTS_DIR,
   PRIVATE_DOMAIN,
   PRIVATE_IP4,
   PRIVATE_IP6,
@@ -256,9 +257,6 @@ function makeData(opt) {
   }
   data.chroot = Template.chroot();
   data.ca_server = data.ca_server || data.acme_ssl;
-  if (data.own_ssl && data.certs_dir) {
-    data.own_certs_dir = data.certs_dir;
-  }
   for (let row of opt) {
     let [key, value, fallback] = row;
     if (!value) value = data[key] || fallback;
@@ -343,10 +341,11 @@ function getSysConfigs() {
   const opt = [
     ["acme_dir", ACME_DIR],
     ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
-    ["acme_env_file", ACME_ENV_FILE],
+    ["acme_env_file", ACME_ENV_FILE, ""],
     ["admin_email", ADMIN_EMAIL],
     ["backup_storage", backup_storage, ""],
     ["certs_dir", CERTS_DIR],
+    ["own_certs_dir", OWN_CERTS_DIR],
     ["data_dir", DRUMEE_DATA_DIR, '/data'],
     ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
     ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],

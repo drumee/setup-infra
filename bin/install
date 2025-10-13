@@ -65,10 +65,9 @@ if [ "$PRIVATE_DOMAIN" != "" ]; then
   $base/bin/create-local-certs
 fi
 
-if [ "$PUBLIC_DOMAIN" != "" ]; then
+if [ "$PUBLIC_DOMAIN" != "" -a "$OWN_CERTS_DIR" = "" ]; then
   $base/bin/init-acme
 fi
-
 
 setup_dirs
 
