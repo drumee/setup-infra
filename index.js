@@ -541,7 +541,7 @@ function writeInfraConf(data) {
     }
   }
 
-  if (jitsi_private_domain && !own_certs_dir)) {
+  if (jitsi_private_domain && !own_certs_dir) {
     targets.push(
       {
         tpl: `${drumee}/certs/jitsi.private.cnf`,
