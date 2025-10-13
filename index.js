@@ -475,7 +475,7 @@ function writeInfraConf(data) {
   const postfix = join(etc, 'postfix',);
   const mariadb = join(etc, 'mysql', 'mariadb.conf.d');
   const infra = join(drumee, 'infrastructure');
-  let { certs_dir, own_certs_dir, public_domain, private_domain, jitsi_private_domain, jits_public_domain } = data;
+  let { certs_dir, own_certs_dir, public_domain, private_domain, jitsi_private_domain } = data;
   let targets = [
 
     // Nginx 
@@ -494,7 +494,10 @@ function writeInfraConf(data) {
     `${mariadb}/50-client.cnf`,
     `${bind}/named.conf.local`,
   ];
-
+  if (own_certs_dir) {
+    certs_dir = own_certs_dir;
+    data.certs_dir = certs_dir;
+  }
   if (data.public_ip4 && public_domain) {
     targets.push(
       `${infra}/internals/accel.public.conf`,
