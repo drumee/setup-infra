@@ -338,6 +338,7 @@ function getSysConfigs() {
     exit(0)
   }
   const nsupdate_key = Template.chroot('etc/bind/keys/update.key')
+  if (OWN_CERTS_DIR && existsSync(OWN_CERTS_DIR)) CERTS_DIR = OWN_CERTS_DIR;
   const opt = [
     ["acme_dir", ACME_DIR],
     ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
@@ -390,7 +391,7 @@ function getSysConfigs() {
   configs.main_domain = data.domain;
   configs.domain_name = data.domain;
   configs.log_dir = data.log_dir;
-  
+
   configs.socketPath = getSocketPath();
   let filename = Template.chroot("etc/drumee/drumee.json");
   Template.makedir(dirname(filename));
@@ -752,7 +753,7 @@ async function getAddresses(data) {
             for (let c of b) {
               if (c == '255') {
                 br.push(a[i])
-              }else{
+              } else {
                 br.push('255')
               }
               i++;
