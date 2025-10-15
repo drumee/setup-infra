@@ -12,6 +12,7 @@ proxy_cache_path <%= cache_dir %>/<%= private_domain %> levels=1:2 keys_zone=<%=
 server {
 	listen <%= public_http_port %>;
 	listen [::]:<%= public_http_port %>;
+	http2 on;
 	server_name <%= private_domain %>; 
 	location / {
 		return  301 https://$host$request_uri;
@@ -19,7 +20,8 @@ server {
 }
 server {
 	listen <%= public_https_port %> ssl;
-	listen [::]:<%= public_https_port %> ssl;	
+	listen [::]:<%= public_https_port %> ssl;
+	http2 on;
 	#
 	root <%= server_dir %>;
 	server_name <%= private_domain %>; 
