@@ -14,7 +14,7 @@ map $http_upgrade $connection_upgrade {
 server {
 	listen <%= public_http_port %> default_server;
 	listen [::]:<%= public_http_port %> default_server;
-	http2 on;
+	# http2 on;
     server_name *.<%= jitsi_public_domain %>;
 	include /etc/jitsi/meet.public.conf;
 }
@@ -22,7 +22,7 @@ server {
 server {
 	listen <%= public_https_port %> ssl ;
 	listen [::]:<%= public_https_port %> ssl;
-	http2 on;
+	# http2 on;
 	server_name <%= jitsi_public_domain %>; 
 	include /etc/jitsi/ssl.public.conf;
 	include /etc/jitsi/meet.public.conf;
