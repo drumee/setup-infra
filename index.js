@@ -26,8 +26,8 @@ let {
   DRUMEE_DESCRIPTION,
   DRUMEE_DOMAIN_NAME,
   DRUMEE_HTTP_PORT,
-  DRUMEE_LOCAL_PORT,
   DRUMEE_HTTPS_PORT,
+  DRUMEE_LOCAL_PORT,
   MAIL_USER,
   MAX_BODY_SIZE,
   NSUPDATE_KEY,
@@ -36,6 +36,7 @@ let {
   PRIVATE_IP4,
   PRIVATE_IP6,
   PUBLIC_IP4,
+  USE_JITSI,
   PRIVATE_IF4,
   PUBLIC_IP6,
   STORAGE_BACKUP,
@@ -352,6 +353,7 @@ function getSysConfigs() {
     ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
     ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],
     ["jitsi_root_dir", '/usr/share/jitsi-meet'],
+    ["use_jitsi", USE_JITSI],
     ["max_body_size", MAX_BODY_SIZE, '10G'],
     ["nsupdate_key", NSUPDATE_KEY, nsupdate_key],
     ["private_domain", PRIVATE_DOMAIN],
@@ -365,6 +367,9 @@ function getSysConfigs() {
     ["storage_backup", backup_storage], /** Legacy */
   ]
   let data = makeData(opt);
+  if (args.only_infra || args.no_jitsi || !data.use_jitsi) {
+    data.use_jitsi = "no";
+  }
   if (!data) {
     exit(1);
   }
