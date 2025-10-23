@@ -140,7 +140,7 @@ location <%= location %> {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header X-Forwarded-Port $server_port;
-    proxy_set_header Referer       	$http_referer;
+    proxy_set_header Referer $http_referer;
     add_header Access-Control-Allow-Credentials true;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;
