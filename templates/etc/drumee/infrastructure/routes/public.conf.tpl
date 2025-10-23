@@ -51,11 +51,13 @@ location <%= location %> {
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Connecting-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Real-IP       $remote_addr;
-    proxy_set_header X-Connecting-IP $remote_addr;
-    proxy_set_header Host       	$host;
+    proxy_set_header X-Forwarded-Port $server_port;
+    proxy_set_header Referer $http_referer;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;
     break;
@@ -66,11 +68,13 @@ location <%= location %> {
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Connecting-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Real-IP       $remote_addr;
-    proxy_set_header X-Connecting-IP $remote_addr;
-    proxy_set_header Host       	$host;
+    proxy_set_header X-Forwarded-Port $server_port;
+    proxy_set_header Referer $http_referer;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;
     break;
@@ -125,18 +129,19 @@ location <%= location %> {
     break;
   }
 
-
 #------------ parts/index ------------
   location ~ (/|)$ {
     proxy_pass http://127.0.0.1:<%= pushPort %>;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-IP       $remote_addr;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Connecting-IP $remote_addr;
-    proxy_set_header Host       	$host;
-    proxy_set_header Referer       	$http_referer;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Port $server_port;
+    proxy_set_header Referer $http_referer;
     add_header Access-Control-Allow-Credentials true;
     add_header Vary "Accept-Encoding";
     fastcgi_hide_header Set-Cookie;
