@@ -1,0 +1,21 @@
+//
+// Configs setup by Drumee setup-infra utility
+//
+
+include "/etc/bind/named.conf.log";
+include "<%= nsupdate_key %>";
+zone "<%= public_domain %>" {
+    type master;
+    file "/var/lib/bind/<%= public_domain %>";
+    allow-query { any; };
+    allow-update { key "update"; };
+    allow-transfer { <%= public_ip4 %>; };
+};
+
+<% if (typeof(reverse_ip4) !== "undefined" && reverse_ip4 != "" ) { %>
+zone "<%= reverse_ip4 %>" {
+    type master;
+    file "/var/lib/bind/<%= public_ip4 %>";
+    allow-query { any; };
+};
+<% } %>

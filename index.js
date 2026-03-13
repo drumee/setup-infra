@@ -324,7 +324,7 @@ function loadEnvFile(file, opt) {
  */
 function getSysConfigs() {
   let {
-    public_domain, private_domain, private_ip4, public_ip4, public_ip6, backup_storage
+    public_domain, private_domain, private_ip4, public_ip4, public_ip6, backup_storage, ui_plugins_home,
   } = sysEnv();
   if (hasExistingSettings(Template.chroot('etc/drumee/drumee.json'))) {
     exit(0)
@@ -364,6 +364,7 @@ function getSysConfigs() {
     ["public_https_port", DRUMEE_HTTPS_PORT],
     ["public_ip4", public_ip4],
     ["public_ip6", public_ip6],
+    ["ui_plugins_home", ui_plugins_home],
     ["storage_backup", backup_storage], /** Legacy */
   ]
   let data = makeData(opt);

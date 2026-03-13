@@ -24,7 +24,7 @@ location <%= location %>api/ {
 
 # Frontend application assets
 location <%= location %>plugins/ {
-  alias <%= ui_location %>/plugins/;
+  alias <%= ui_plugins_home %>/;
   add_header Cache-Control max-age=31536000;
   add_header Access-Control-Allow-Origin <%= private_domain %>;
   fastcgi_hide_header Set-Cookie;
