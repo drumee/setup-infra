@@ -7,6 +7,13 @@ const parser = new argparse.ArgumentParser({
   add_help: true,
 });
 
+const {
+  DRUMEE_DATA_DIR,
+  DRUMEE_DB_DIR,
+  ACME_DIR,
+  OWN_CERTS_DIR
+} = process.env;
+
 parser.add_argument("--readonly", {
   type: "int",
   default: 0,
@@ -72,15 +79,57 @@ parser.add_argument("--envfile", {
   help: "Data set required to install Drumee",
 });
 
-parser.add_argument("--only-infra", {
+parser.add_argument("--localhost", {
   type: "int",
   default: 0,
+  help: "If set, write only configs related to localhost setup. No bind",
+});
+
+parser.add_argument("--reconfigure", {
+  type: "int",
+  default: 0,
+  help: "If set, overwrite all exisiting settings",
+});
+
+parser.add_argument("--db-dir", {
+  type: String,
+  default: DRUMEE_DB_DIR || '/srv/db',
+  help: "Db data dir",
+});
+
+parser.add_argument("--data-dir", {
+  type: String,
+  default: DRUMEE_DATA_DIR || '/data',
+  help: "Db data dir",
+});
+
+parser.add_argument("--own-certs-dir", {
+  type: String,
+  default: OWN_CERTS_DIR,
+  help: "If set, use as sertificates dir",
+});
+
+parser.add_argument("--acme-dir", {
+  type: String,
+  default: ACME_DIR || '/usr/share/acme',
+  help: "Acme base dir",
+});
+
+parser.add_argument("--watch", {
+  type: "int",
+  default: 0,
+  help: "If set, configure pm2 to watch changes on main endpoint",
+});
+
+parser.add_argument("--only-infra", {
+  type: "int",
+  default: 1,
   help: "If set, write only configs related to infra. Same as no-jitsi",
 });
 
 parser.add_argument("--no-jitsi", {
   type: "int",
-  default: 0,
+  default: 1,
   help: "If set, won't write configs related to jisit. Same as only-infra",
 });
 

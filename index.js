@@ -15,14 +15,10 @@ const { args, hasExistingSettings } = require('./templates/utils')
 const JSON_OPT = { spaces: 2, EOL: "\r\n" };
 
 let {
-  ACME_DIR,
   ACME_EMAIL_ACCOUNT,
   ACME_ENV_FILE,
   ADMIN_EMAIL,
   BACKUP_STORAGE,
-  CERTS_DIR,
-  DRUMEE_DATA_DIR,
-  DRUMEE_DB_DIR,
   DRUMEE_DESCRIPTION,
   DRUMEE_DOMAIN_NAME,
   DRUMEE_HTTP_PORT,
@@ -31,7 +27,6 @@ let {
   MAIL_USER,
   MAX_BODY_SIZE,
   NSUPDATE_KEY,
-  OWN_CERTS_DIR,
   PRIVATE_DOMAIN,
   PRIVATE_IP4,
   PRIVATE_IP6,
@@ -50,7 +45,7 @@ if (PUBLIC_DOMAIN) {
 }
 
 PRIVATE_DOMAIN = PRIVATE_DOMAIN || 'local.drumee';
-if (OWN_CERTS_DIR) PRIVATE_DOMAIN = null;
+if (args.own_certs_dir) PRIVATE_DOMAIN = null;
 DRUMEE_HTTPS_PORT = DRUMEE_HTTPS_PORT || 443;
 DRUMEE_LOCAL_PORT = DRUMEE_LOCAL_PORT || 8443;
 DRUMEE_HTTP_PORT = DRUMEE_HTTP_PORT || 80;
@@ -133,7 +128,7 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
 
   if (!server_dir) server_dir = join(runtime_dir, 'server');
   let base = `${server_dir}/${route}`;
-  return {
+  const opt = {
     name,
     script,
     cwd: base,
@@ -148,6 +143,14 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
     exec_mode,
     instances
   };
+  if (args.watch) {
+    opt.watch = [
+      base,
+      join(runtime_dir, 'plugins', 'server', route),
+      join(runtime_dir, 'plugins', 'ui', route),
+    ]
+  }
+  return opt;
 }
 
 /***
@@ -340,17 +343,17 @@ function getSysConfigs() {
     exit(0)
   }
   const nsupdate_key = Template.chroot('etc/bind/keys/update.key')
-  if (OWN_CERTS_DIR && existsSync(OWN_CERTS_DIR)) CERTS_DIR = OWN_CERTS_DIR;
+  if (args.own_certs_dir && existsSync(args.own_certs_dir)) args.certs_dir = args.own_certs_dir;
   const opt = [
-    ["acme_dir", ACME_DIR],
+    ["acme_dir", args.acme_dir],
     ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
     ["acme_env_file", ACME_ENV_FILE, ""],
     ["admin_email", ADMIN_EMAIL],
     ["backup_storage", backup_storage, ""],
-    ["certs_dir", CERTS_DIR],
-    ["own_certs_dir", OWN_CERTS_DIR],
-    ["data_dir", DRUMEE_DATA_DIR, '/data'],
-    ["db_dir", DRUMEE_DB_DIR, '/srv/db'],
+    ["certs_dir", args.certs_dir],
+    ["own_certs_dir", args.own_certs_dir],
+    ["data_dir", args.data_dir],
+    ["db_dir", args.db_dir],
     ["domain_desc", DRUMEE_DESCRIPTION, 'My Drumee Box'],
     ["jitsi_root_dir", '/usr/share/jitsi-meet'],
     ["use_jitsi", USE_JITSI],
