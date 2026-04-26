@@ -141,6 +141,9 @@ function getSysConfigs() {
 
   data.public_domain = public_domain;
   data.private_domain = args.own_certs_dir ? null : private_domain;
+  data.public_http_port = data.public_http_port || 80;
+  data.public_https_port = data.public_https_port || 443;
+  data.jitsi_root_dir = data.jitsi_root_dir || '/usr/share/jitsi-meet';
   data.chroot = Template.chroot();
 
   if (public_domain) {
