@@ -2,21 +2,23 @@ const argparse = require("argparse");
 const { existsSync } = require("fs");
 const { readFileSync } = require(`jsonfile`);
 const {
+  ACME_DIR,
+  ADMIN_EMAIL,
   BACKUP_STORAGE,
   DRUMEE_DATA_DIR,
   DRUMEE_DB_DIR,
+  DRUMEE_DESCRIPTION,
+  DRUMEE_ROOT,
+  FORCE_INSTALL,
+  HTTP_PORT,
+  HTTPS_PORT,
   MAX_BODY_SIZE,
+  OWN_CERTS_DIR,
   PRIVATE_DOMAIN,
   PRIVATE_IP4,
   PUBLIC_DOMAIN,
   PUBLIC_IP4,
   PUBLIC_IP6,
-  DRUMEE_ROOT,
-  HTTP_PORT,
-  HTTPS_PORT,
-  FORCE_INSTALL,
-  ADMIN_EMAIL,
-  DRUMEE_DESCRIPTION
 } = process.env;
 
 const parser = new argparse.ArgumentParser({
@@ -24,12 +26,6 @@ const parser = new argparse.ArgumentParser({
   add_help: true,
 });
 
-const {
-  DRUMEE_DATA_DIR,
-  DRUMEE_DB_DIR,
-  ACME_DIR,
-  OWN_CERTS_DIR
-} = process.env;
 
 parser.add_argument("--readonly", {
   type: "int",
