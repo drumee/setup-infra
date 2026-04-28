@@ -1,0 +1,13 @@
+[ req ]
+default_bits        = 2048
+prompt              = no
+default_md          = sha256
+distinguished_name  = dn
+
+[ dn ]
+C  = XX
+ST = YourState
+L  = YourCity
+O  = Drumee Web OO
+OU = Drumee Conferennce Services
+CN = *.<%= jitsi_private_domain %>

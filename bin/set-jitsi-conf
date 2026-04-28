@@ -1,0 +1,14 @@
+#!/bin/sh
+if [ -e /etc/drumee/drumee.sh ]; then
+  if [ -e /etc/prosody/defaults/credentials.sh ]; then
+    . /etc/drumee/drumee.sh
+    . /etc/prosody/defaults/credentials.sh
+    . /usr/share/debconf/confmodule
+    turn_secret=$(grep static-auth-secret /etc/turnserver.conf | sed -E "s/^.+=//")
+    db_set jitsi-videobridge/jvb-hostname $JITSI_DOMAIN
+    db_set jitsi-videobridge/jvbsecret $JVB_PASSWORD
+    db_set jicofo/jicofo-authpassword $JICOFO_PASSWORD
+    db_set jitsi-meet-prosody/jvb-hostname $JITSI_DOMAIN
+    db_set jitsi-meet-prosody/turn-secret $turn_secret
+  fi
+fi

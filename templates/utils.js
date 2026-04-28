@@ -24,17 +24,12 @@ const parser = new argparse.ArgumentParser({
   add_help: true,
 });
 
-parser.add_argument("--admin_email", {
-  type: String,
-  default: ADMIN_EMAIL || "admin@localhost",
-  help: "Drumee Instance Admin User Email",
-});
-
-parser.add_argument("--description", {
-  type: String,
-  default: DRUMEE_DESCRIPTION || "My Drumee Team Server",
-  help: "Drumee Instance Description",
-});
+const {
+  DRUMEE_DATA_DIR,
+  DRUMEE_DB_DIR,
+  ACME_DIR,
+  OWN_CERTS_DIR
+} = process.env;
 
 parser.add_argument("--readonly", {
   type: "int",
@@ -44,68 +39,56 @@ parser.add_argument("--readonly", {
 
 parser.add_argument("--chroot", {
   type: String,
-  default: '/',
+  default: null,
   help: "Output root. Defaulted to /",
 });
 
-parser.add_argument("--reconfigure", {
-  type: "int",
-  default: FORCE_INSTALL || 0,
+parser.add_argument("--force-install", {
+  type: String,
+  default: 0,
   help: "Override existing configs",
 });
 
 parser.add_argument("--outdir", {
   type: String,
-  default: '/',
+  default: null,
   help: "If set, takes precedent on chroot. Output root. Defaulted to /",
-});
-
-parser.add_argument("--log-dir", {
-  type: String,
-  default: '/var/log/drumee',
-  help: "Drumee server log location",
-});
-
-parser.add_argument("--verbosity", {
-  type: "int",
-  default: 2,
-  help: "Server log level",
 });
 
 parser.add_argument("--public-domain", {
   type: String,
-  default: PUBLIC_DOMAIN,
+  default: null,
   help: "Public domain name",
 });
 
 parser.add_argument("--private-domain", {
   type: String,
-  default: PRIVATE_DOMAIN,
+  default: null,
   help: "Private domain name",
-});
-
-parser.add_argument("--local-domain", {
-  type: String,
-  default: PRIVATE_DOMAIN,
-  help: "",
 });
 
 parser.add_argument("--public-ip4", {
   type: String,
-  default: PUBLIC_IP4,
+  default: null,
   help: "Public IPV4",
 });
 
 parser.add_argument("--public-ip6", {
   type: String,
-  default: PUBLIC_IP6,
+  default: null,
   help: "Public IPV6",
 });
 
 parser.add_argument("--private-ip4", {
   type: String,
-  default: PRIVATE_IP4,
+  default: null,
   help: "Private IPV4",
+});
+
+parser.add_argument("--private-ip6", {
+  type: String,
+  default: null,
+  help: "Private IPV6",
 });
 
 parser.add_argument("--envfile", {
@@ -113,101 +96,58 @@ parser.add_argument("--envfile", {
   help: "Dataset required to install Drumee",
 });
 
-parser.add_argument("--only-infra", {
-  type: "int",
-  default: 0,
-  help: "If set, write only configs related to infra. Same as no-jitsi",
-});
-
 parser.add_argument("--localhost", {
   type: "int",
   default: 0,
-  help: "If set, write minimal configs, no jitsi, no bind",
+  help: "If set, write only configs related to localhost setup. No bind",
 });
 
-parser.add_argument("--http-port", {
+parser.add_argument("--reconfigure", {
   type: "int",
-  default: HTTP_PORT || 80,
-  help: "If set, write minimal configs, no jitsi, no bind",
-});
-
-parser.add_argument("--https-port", {
-  type: "int",
-  default: HTTPS_PORT || 443,
-  help: "If set, write minimal configs, no jitsi, no bind",
-});
-
-parser.add_argument("--data-dir", {
-  type: String,
-  default: DRUMEE_DATA_DIR || "/var/lib/drumee/data",
-  help: "Partition or directory dedicated to store drumee data",
+  default: 0,
+  help: "If set, overwrite all exisiting settings",
 });
 
 parser.add_argument("--db-dir", {
   type: String,
-  default: DRUMEE_DB_DIR || "/var/lib/mysql",
-  help: "Partition or directory dedicated to store drumee database",
+  default: DRUMEE_DB_DIR || '/srv/db',
+  help: "Db data dir",
 });
 
-parser.add_argument("--system-user", {
+parser.add_argument("--data-dir", {
   type: String,
-  default: "www-data",
-  help: "System user used to run Drumee",
+  default: DRUMEE_DATA_DIR || '/data',
+  help: "Db data dir",
 });
 
-parser.add_argument("--system-group", {
+parser.add_argument("--own-certs-dir", {
   type: String,
-  default: "www-data",
-  help: "System group used to run Drumee",
+  default: OWN_CERTS_DIR,
+  help: "If set, use as sertificates dir",
 });
 
-parser.add_argument("--watch-dirs", {
+parser.add_argument("--acme-dir", {
   type: String,
-  default: null,
-  help: "pm2 watch directories",
+  default: ACME_DIR || '/usr/share/acme',
+  help: "Acme base dir",
 });
 
-parser.add_argument("--watch-delay", {
-  type: 'int',
-  default: 1000,
-  help: "pm2 watch delay",
-});
-
-parser.add_argument("--watch-symlinks", {
-  type: 'int',
+parser.add_argument("--watch", {
+  type: "int",
   default: 0,
-  help: "pm2 watch delay",
+  help: "If set, configure pm2 to watch changes on main endpoint",
 });
 
-parser.add_argument("--watch-ignore", {
-  type: String,
-  default: null,
-  help: "pm2 ignore directories",
+parser.add_argument("--only-infra", {
+  type: "int",
+  default: 1,
+  help: "If set, write only configs related to infra. Same as no-jitsi",
 });
-
-parser.add_argument("--drumee-root", {
-  type: String,
-  default: DRUMEE_ROOT || "/var/lib/drumee",
-  help: "Drumee main base",
-});
-
 
 parser.add_argument("--no-jitsi", {
   type: "int",
-  default: 0,
+  default: 1,
   help: "If set, won't write configs related to jisit. Same as only-infra",
-});
-
-parser.add_argument("--max-body-size", {
-  type: String,
-  default: MAX_BODY_SIZE || '10G',
-  help: "If set, won't write configs related to jisit. Same as only-infra",
-});
-
-parser.add_argument("--backup-storage", {
-  type: String,
-  default: BACKUP_STORAGE || '10G',
-  help: "If set, the partition or directiry will used to backup Drumee data",
 });
 
 const args = parser.parse_args();

@@ -1,28 +1,28 @@
 admins = {
-    "jigasi@auth.<%= prvate_jitsi %>",
-    "jibri@auth.<%= prvate_jitsi %>",
-    "focus@auth.<%= prvate_jitsi %>",
-    "jvb@auth.<%= prvate_jitsi %>"
+    "jigasi@auth.<%= jitsi_private_domain %>",
+    "jibri@auth.<%= jitsi_private_domain %>",
+    "focus@auth.<%= jitsi_private_domain %>",
+    "jvb@auth.<%= jitsi_private_domain %>"
 }
 
 unlimited_jids = {
-    "focus@auth.<%= prvate_jitsi %>",
-    "jvb@auth.<%= prvate_jitsi %>"
+    "focus@auth.<%= jitsi_private_domain %>",
+    "jvb@auth.<%= jitsi_private_domain %>"
 }
 
-plugin_paths = { "/usr/share/jitsi-meet/prosody-plugins/", "/prosody-plugins-custom" }
+plugin_paths = { "<%= jitsi_root_dir %>/prosody-plugins/", "/prosody-plugins-custom" }
 
-muc_mapper_domain_base = "<%= prvate_jitsi %>";
+muc_mapper_domain_base = "<%= jitsi_private_domain %>";
 muc_mapper_domain_prefix = "muc";
-http_default_host = "<%= prvate_jitsi %>"
+http_default_host = "<%= jitsi_private_domain %>"
 consider_bosh_secure = true;
 consider_websocket_secure = true;
 
-VirtualHost "<%= prvate_jitsi %>"
+VirtualHost "<%= jitsi_private_domain %>"
     authentication = "internal_hashed"
     ssl = {
-        key = "<%= certs_dir %>/<%= prvate_jitsi %>_ecc/<%= prvate_jitsi %>.key";
-        certificate = "<%= certs_dir %>/<%= prvate_jitsi %>_ecc/<%= prvate_jitsi %>.cer";
+        key = "<%= certs_dir %>/<%= jitsi_private_domain %>_ecc/<%= jitsi_private_domain %>.key";
+        certificate = "<%= certs_dir %>/<%= jitsi_private_domain %>_ecc/<%= jitsi_private_domain %>.cer";
     }
     modules_enabled = {
         "bosh";
@@ -39,22 +39,22 @@ VirtualHost "<%= prvate_jitsi %>"
         "av_moderation";
         "turncredentials";
     }
-    main_muc = "muc.<%= prvate_jitsi %>"
-    lobby_muc = "lobby.<%= prvate_jitsi %>"
-    breakout_rooms_muc = "breakout.<%= prvate_jitsi %>"
-    speakerstats_component = "speakerstats.<%= prvate_jitsi %>"
-    conference_duration_component = "conferenceduration.<%= prvate_jitsi %>"
-    end_conference_component = "endconference.<%= prvate_jitsi %>"
-    av_moderation_component = "avmoderation.<%= prvate_jitsi %>"
+    main_muc = "muc.<%= jitsi_private_domain %>"
+    lobby_muc = "lobby.<%= jitsi_private_domain %>"
+    breakout_rooms_muc = "breakout.<%= jitsi_private_domain %>"
+    speakerstats_component = "speakerstats.<%= jitsi_private_domain %>"
+    conference_duration_component = "conferenceduration.<%= jitsi_private_domain %>"
+    end_conference_component = "endconference.<%= jitsi_private_domain %>"
+    av_moderation_component = "avmoderation.<%= jitsi_private_domain %>"
     turncredentials_secret = "<%= turn_sercret %>"
     c2s_require_encryption = false
 
 
-VirtualHost "guest.<%= prvate_jitsi %>"
+VirtualHost "guest.<%= jitsi_private_domain %>"
     authentication = "anonymous"
     ssl = {
-        key = "/usr/share/acme/certs/<%= prvate_jitsi %>_ecc/<%= prvate_jitsi %>.key";
-        certificate = "/usr/share/acme/certs/<%= prvate_jitsi %>_ecc/<%= prvate_jitsi %>.cer";
+        key = "<%= certs_dir %>/<%= jitsi_private_domain %>_ecc/<%= jitsi_private_domain %>.key";
+        certificate = "<%= certs_dir %>/<%= jitsi_private_domain %>_ecc/<%= jitsi_private_domain %>.cer";
     }
     modules_enabled = {
         "bosh";
@@ -71,21 +71,21 @@ VirtualHost "guest.<%= prvate_jitsi %>"
         "av_moderation";
  	    "turncredentials";
     }
-    main_muc = "muc.<%= prvate_jitsi %>"
-    lobby_muc = "lobby.<%= prvate_jitsi %>"
-    breakout_rooms_muc = "breakout.<%= prvate_jitsi %>"
-    speakerstats_component = "speakerstats.<%= prvate_jitsi %>"
-    conference_duration_component = "conferenceduration.<%= prvate_jitsi %>"
-    end_conference_component = "endconference.<%= prvate_jitsi %>"
-    av_moderation_component = "avmoderation.<%= prvate_jitsi %>"
+    main_muc = "muc.<%= jitsi_private_domain %>"
+    lobby_muc = "lobby.<%= jitsi_private_domain %>"
+    breakout_rooms_muc = "breakout.<%= jitsi_private_domain %>"
+    speakerstats_component = "speakerstats.<%= jitsi_private_domain %>"
+    conference_duration_component = "conferenceduration.<%= jitsi_private_domain %>"
+    end_conference_component = "endconference.<%= jitsi_private_domain %>"
+    av_moderation_component = "avmoderation.<%= jitsi_private_domain %>"
     turncredentials_secret = "<%= turn_sercret %>"
     c2s_require_encryption = false
 
 
-VirtualHost "auth.<%= prvate_jitsi %>"
+VirtualHost "auth.<%= jitsi_private_domain %>"
     ssl = {
-        key = "<%= certs_dir %>/<%= prvate_jitsi %>_ecc/<%= prvate_jitsi %>.key";
-        certificate = "<%= certs_dir %>/<%= prvate_jitsi %>_ecc/fullchain.cer";
+        key = "<%= certs_dir %>/<%= jitsi_private_domain %>_ecc/<%= jitsi_private_domain %>.key";
+        certificate = "<%= certs_dir %>/<%= jitsi_private_domain %>_ecc/fullchain.cer";
     }
     modules_enabled = {
         "limits_exception";
@@ -94,16 +94,16 @@ VirtualHost "auth.<%= prvate_jitsi %>"
 
 
 
-Component "internal-muc.<%= prvate_jitsi %>" "muc"
+Component "internal-muc.<%= jitsi_private_domain %>" "muc"
     storage = "memory"
     modules_enabled = {
         "ping";
     }
     restrict_room_creation = true
     muc_room_locking = false
-    muc_room_default_public_jids = true
+    muc_room_default_private_jids = true
 
-Component "muc.<%= prvate_jitsi %>" "muc"
+Component "muc.<%= jitsi_private_domain %>" "muc"
     restrict_room_creation = true
     storage = "memory"
     modules_enabled = {
@@ -117,39 +117,39 @@ Component "muc.<%= prvate_jitsi %>" "muc"
 	rate_limit_cache_size = 10000;
     muc_room_cache_size = 1000
     muc_room_locking = false
-    muc_room_default_public_jids = true
+    muc_room_default_private_jids = true
     muc_password_whitelist = {
         "focus@<no value>"
     }
 
-Component "focus.<%= prvate_jitsi %>" "client_proxy"
-    target_address = "focus@auth.<%= prvate_jitsi %>"
+Component "focus.<%= jitsi_private_domain %>" "client_proxy"
+    target_address = "focus@auth.<%= jitsi_private_domain %>"
 
-Component "speakerstats.<%= prvate_jitsi %>" "speakerstats_component"
-    muc_component = "muc.<%= prvate_jitsi %>"
+Component "speakerstats.<%= jitsi_private_domain %>" "speakerstats_component"
+    muc_component = "muc.<%= jitsi_private_domain %>"
 
-Component "conferenceduration.<%= prvate_jitsi %>" "conference_duration_component"
-    muc_component = "muc.<%= prvate_jitsi %>"
-
-
-Component "endconference.<%= prvate_jitsi %>" "end_conference"
-    muc_component = "muc.<%= prvate_jitsi %>"
+Component "conferenceduration.<%= jitsi_private_domain %>" "conference_duration_component"
+    muc_component = "muc.<%= jitsi_private_domain %>"
 
 
-Component "lobby.<%= prvate_jitsi %>" "muc"
+Component "endconference.<%= jitsi_private_domain %>" "end_conference"
+    muc_component = "muc.<%= jitsi_private_domain %>"
+
+
+Component "lobby.<%= jitsi_private_domain %>" "muc"
     storage = "memory"
     restrict_room_creation = true
     muc_room_locking = false
-    muc_room_default_public_jids = true
+    muc_room_default_private_jids = true
     modules_enabled = {
     }
 
 
-Component "breakout.<%= prvate_jitsi %>" "muc"
+Component "breakout.<%= jitsi_private_domain %>" "muc"
     storage = "memory"
     restrict_room_creation = true
     muc_room_locking = false
-    muc_room_default_public_jids = true
+    muc_room_default_private_jids = true
     modules_enabled = {
         "muc_meeting_id";
         "muc_domain_mapper";
@@ -157,6 +157,6 @@ Component "breakout.<%= prvate_jitsi %>" "muc"
     }
 
 
-Component "metadata.<%= prvate_jitsi %>" "room_metadata_component"
-    muc_component = "muc.<%= prvate_jitsi %>"
-    breakout_rooms_component = "breakout.<%= prvate_jitsi %>"
+Component "metadata.<%= jitsi_private_domain %>" "room_metadata_component"
+    muc_component = "muc.<%= jitsi_private_domain %>"
+    breakout_rooms_component = "breakout.<%= jitsi_private_domain %>"
