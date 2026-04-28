@@ -74,6 +74,8 @@ modules_enabled = {
         
 };
 
+plugin_paths = { "<%= jitsi_root_dir %>/prosody-plugins/", "/prosody-plugins-custom" }
+
 component_ports = { }
 
 -- These modules are auto-loaded, but should you want

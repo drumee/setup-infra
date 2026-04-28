@@ -10,7 +10,6 @@ unlimited_jids = {
     "jvb@auth.<%= jitsi_public_domain %>"
 }
 
-plugin_paths = { "<%= jitsi_root_dir %>/prosody-plugins/", "/prosody-plugins-custom" }
 
 muc_mapper_domain_base = "<%= jitsi_public_domain %>";
 muc_mapper_domain_prefix = "muc";
