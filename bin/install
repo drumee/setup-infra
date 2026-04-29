@@ -14,7 +14,12 @@ if [ "$PUBLIC_DOMAIN" != "" ]; then
 fi
 
 # Generate all the required settings 
-node $base/index.js
+if [ -f ${base}/${DRUMEE_COMPONENTS}.js ]; then 
+  node ${base}/${DRUMEE_COMPONENTS}.js
+else
+  node ${base}/infra.js
+  node ${base}/jitsi.js
+fi
 
 if [ ! -e /etc/drumee/drumee.sh ]; then 
   echo "Setup has failed"

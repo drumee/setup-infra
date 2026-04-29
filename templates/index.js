@@ -5,7 +5,7 @@ const { env } = process;
 const { template, isEmpty } = require("lodash");
 
 const { resolve, join, dirname } = require("path");
-const { args} = require('./utils')
+const { args } = require('./utils')
 /**
  * 
  * @param {*} p 
@@ -100,7 +100,30 @@ function write(data, fn, tpl_name, chr) {
 }
 
 
+/**
+ *
+ * @param {*} data
+ * @param {*} targets
+ * @returns
+ */
+function writeMultiple(data, targets) {
+  const { isString } = require('lodash');
+  for (let target of targets) {
+    try {
+      if (isString(target)) {
+        write(data, target, target);
+      } else {
+        let { out, tpl } = target;
+        write(data, out, tpl);
+      }
+    } catch (e) {
+      console.error("Failed to write configs for", target, e);
+    }
+  }
+}
+
 module.exports = {
+  writeMultiple,
   write,
   chroot,
   render,

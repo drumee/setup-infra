@@ -29,14 +29,6 @@ export DRUMEE_DOMAIN_NAME=<%= private_domain %>
 
 <% } %>
 
-<% if (/^jit\.(.+)$/.test(jitsi_public_domain)) { %>
-export JITSI_DOMAIN=<%= jitsi_public_domain %>
-#jitsi_public_domain |<%= jitsi_public_domain %>|<%= typeof(jitsi_public_domain) %>|
-<% } else if (/^jit\.(.+)$/.test(jitsi_private_domain)) { %>
-#jitsi_private_domain
-export JITSI_DOMAIN=<%= jitsi_private_domain %>
-<% } %>
-
 export APP_ROUTING_MARK=<%= public_ui_root %>
 export CREDENTIAL_DIR=/etc/drumee/credential
 export NSUPDATE_KEY=<%= nsupdate_key %>
@@ -64,4 +56,3 @@ export PUBLIC_UI_ROOT=<%= public_ui_root %>
 export PUBLIC_HTTP_PORT=<%= public_http_port %>
 export PUBLIC_HTTPS_PORT=<%= public_https_port %>
 export ACME_ENV_FILE=<%= acme_env_file %>
-export USE_JITSI=<%= use_jitsi %>
