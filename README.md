@@ -1,6 +1,7 @@
 # setup-infra – Auto-configuration for Drumee
 
-npm i @drumee/setup-schemas
+npm i @drumee/setup-infra
+
 This package depends on @drumee/setup-infra
 
 This module is used **internally by the Drumee Docker container or Drumee Bare Metall installer** on first boot.  
