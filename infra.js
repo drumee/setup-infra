@@ -129,6 +129,7 @@ function worker(data, instances = 1, exec_mode = 'fork_mode') {
 
   if (!server_dir) server_dir = join(runtime_dir, 'server');
   let base = `${server_dir}/${route}`;
+  let iname = name.replace(/\//g, '-');
   const opt = {
     name,
     script,
