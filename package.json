@@ -2,9 +2,9 @@
   "name": "@drumee/setup-infra",
   "version": "1.0.35",
   "description": "Drumee Infrastructure Setup Utilities",
-  "main": "index.js",
+  "main": "infra.js",
   "scripts": {
-    "configure": "./index.js",
+    "configure": "./infra.js",
     "release": "git push && npm publish --access public && npm version patch"
   },
   "repository": {
