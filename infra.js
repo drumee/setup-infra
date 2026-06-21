@@ -558,7 +558,7 @@ function writeInfraConf(data) {
   }
 
   if (data.public_ip4 && public_domain) {
-    let dir = join(args.drumee_root, 'cache', public_domain)
+    let dir = join(data.drumee_root, 'cache', public_domain)
     mkdirSync(dir, { recursive: true });
     targets.push(
       `${infra}/internals/accel.public.conf`,
@@ -588,7 +588,7 @@ function writeInfraConf(data) {
   }
 
   if (data.private_ip4 && private_domain) {
-    let dir = join(args.drumee_root, 'cache', private_domain)
+    let dir = join(data.drumee_root, 'cache', private_domain)
     mkdirSync(dir, { recursive: true });
     targets.push(
       `${infra}/internals/accel.private.conf`,
