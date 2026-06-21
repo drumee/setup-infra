@@ -677,6 +677,9 @@ function main() {
   data = getAddresses(data);
   if (args.debug) console.log(data)
   writeInfraConf(data)
+  // Generate the pm2 ecosystem (index.js + service.js + factory) that
+  // /etc/init.d/drumee starts — without this the app never launches.
+  writeEcoSystem(data)
 }
 
 main();
