@@ -449,7 +449,10 @@ function getSysConfigs() {
   configs.ui_home = configs.ui_base;
   configs.ui_location = configs.ui_base;
 
-  configs.tmp_dir = join(configs.runtime_dir, 'tmp');
+  /** Temp files (download zip staging, upload buffers) can grow very large;
+      keep them on the data partition, not the system disk */
+  configs.tmp_dir = join(configs.data_dir, 'tmp');
+  Template.makedir(Template.chroot(configs.tmp_dir));
   configs.static_dir = join(configs.runtime_dir, 'static');
 
   let filename = Template.chroot("etc/drumee/drumee.json");
