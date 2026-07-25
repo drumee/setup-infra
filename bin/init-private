@@ -20,7 +20,7 @@ key=${outdir}/${mydomain}.key
 csr=${outdir}/${mydomain}.csr
 cer=${outdir}/${mydomain}.cer
 
-mkir -p $outdir
+mkdir -p $outdir
 
 C=$(locale --all | grep utf8 | tail -1 | sed  -E "s/^(.+_)|(\..+)$//g")
 if [ "$C" = "" ]; then
