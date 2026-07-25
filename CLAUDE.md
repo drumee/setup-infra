@@ -5,21 +5,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Run the full configurator (infra + Jitsi)
-./index.js [options]
+# Run the infra configurator (optionally + Jitsi)
+./infra.js [options]
 
 # Run the Jitsi-only configurator
 ./jitsi.js [options]
+
+# Full install orchestration (runs the bin/ scripts, then infra.js + jitsi.js)
+./bin/install
 
 # Publish a new patch version
 npm run release   # git push + npm publish + npm version patch
 ```
 
+> **Note:** The `index.js` entry point was renamed to `infra.js` (commit `0c40b1d`,
+> "Splited jitsi/infra"). `npm run configure` and `package.json`'s `main` field point
+> at `infra.js`.
+
 ## CLI Arguments
 
-Both `index.js` and `jitsi.js` accept the same arguments via `templates/utils.js`.
-
-### `index.js`
+Both `infra.js` and `jitsi.js` parse the same argument set defined in `templates/utils.js` (`parser.parse_args()`).
 
 | Argument | Default | Description |
 |---|---|---|
@@ -29,11 +34,16 @@ Both `index.js` and `jitsi.js` accept the same arguments via `templates/utils.js
 | `--private-ip4` / `--private-ip6` | null | Override auto-detected private IPs |
 | `--chroot` / `--outdir` | `/` | Output root — all config files are written under this prefix |
 | `--readonly 1` | 0 | Print targets instead of writing files |
+| `--debug 1` | 0 | Verbose / debug output |
+| `--localhost 1` | 0 | Localhost-only mode (no public domain) |
+| `--reconfigure 1` | 0 | Regenerate configs over an existing install |
+| `--envfile` | null | Path to an env file to load before building `data` |
 | `--only-infra 1` | 1 | Skip Jitsi config generation |
 | `--no-jitsi 1` | 1 | Same as `--only-infra` |
 | `--watch 1` | 0 | Configure pm2 to watch endpoint dirs for changes |
 | `--force-install` | 0 | Override an existing installation |
 | `--own-certs-dir` | null | Use pre-existing TLS certificates from this directory |
+| `--acme-dir` | null | ACME / Let's Encrypt working directory |
 | `--data-dir` | `/data` | User data directory |
 | `--db-dir` | `/srv/db` | MariaDB data directory |
 
@@ -43,11 +53,16 @@ Both `index.js` and `jitsi.js` accept the same arguments via `templates/utils.js
 
 | Script | Purpose |
 |---|---|
-| `index.js` | Full setup — infra + optional Jitsi |
+| `infra.js` | Infra setup — drumee.json, BIND, nginx, postfix, DB, PM2 ecosystem + optional Jitsi |
 | `jitsi.js` | Jitsi-only reconfiguration |
 | `template.js` | Legacy entry point (hardcoded paths, no `--chroot`) |
+| `bin/install` | Top-level shell orchestrator — runs `bin/` helpers, then `node infra.js` + `node jitsi.js` (or the single script named by the `DRUMEE_COMPONENTS` env var if `${DRUMEE_COMPONENTS}.js` exists) |
 
-**`index.js`** flow:
+`bin/` holds shell helpers invoked by `bin/install` (e.g. `init-mail`, `init-named`, `init-acme`, `init-private`, `create-local-certs`, `preset-jitsi`, `prosody`, `env`). The `node` configurators only generate files; these scripts apply them to the running system.
+
+The core config-building functions (`makeData`, `getSysConfigs`, `makeConfData`, `writeInfraConf`, `writeEcoSystem`, `copyConfigs`) live in **`infra.js`** itself, not in a shared module; `writeJitsiConf` is defined in **`jitsi.js`**. `templates/utils.js` is the only shared helper module (`args`, `getAddresses`, `hasExistingSettings`, `randomString`).
+
+**`infra.js`** flow:
 1. Reads environment variables and CLI args to assemble a `data` object via `makeData()` / `getSysConfigs()`.
 2. Auto-detects network interfaces (public/private IPv4/IPv6) via `getAddresses()`.
 3. Calls `writeInfraConf(data)` (always) and optionally `writeJitsiConf(data)`.
@@ -76,6 +91,8 @@ Templates use **lodash `_.template()`** (ES template literal syntax with `<%= %>
 - `etc/turnserver.conf.tpl` — Coturn configs
 - `server/` — PM2 ecosystem config template
 - `var/lib/bind/` — DNS zone data templates
+- `env/` — application env / logrotate templates (`application.json.tpl`, `logrotate.tpl`)
+- `schema/` — DB schema helper templates
 
 Templates exist in `public`, `private`, and base variants (e.g., `meet.public.conf.tpl`, `meet.private.conf.tpl`, `meet.conf.tpl`).
 

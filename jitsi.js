@@ -5,7 +5,7 @@ const { join } = require("path");
 const { isString } = require("lodash");
 const { exit } = process;
 const { loadSysEnv, sysEnv } = require("@drumee/server-essentials");
-const { args } = require('./templates/utils');
+const { args, randomString, getAddresses } = require('./templates/utils');
 
 const {
   DRUMEE_DOMAIN_NAME,
@@ -17,29 +17,6 @@ const {
   PRIVATE_IF4,
 } = process.env;
 
-function randomString() {
-  let crypto = require("crypto");
-  return crypto.randomBytes(16).toString("base64").replace(/[\+\/=]+/g, "");
-}
-
-function writeTemplates(data, targets) {
-  if (args.readonly || args.noCheck) {
-    console.log("Readonly", targets, data);
-    return;
-  }
-  for (let target of targets) {
-    try {
-      if (isString(target)) {
-        Template.write(data, target, target);
-      } else {
-        let { out, tpl } = target;
-        Template.write(data, out, tpl);
-      }
-    } catch (e) {
-      console.error("Failed to write configs for", target, e);
-    }
-  }
-}
 
 function addJitsiConfigsFiles(targets, data, type = 'private') {
   const etc = 'etc';
@@ -71,7 +48,7 @@ function addJitsiConfigsFiles(targets, data, type = 'private') {
     `${etc}/turnserver.${type}.conf`,
     {
       tpl: `${drumee}/conf.d/conference.${type}.json`,
-      out: `${drumee}/conf.d/${domain}.json`,
+      out: `${drumee}/conf.d/conference.json`,
     },
   );
 }
@@ -100,7 +77,7 @@ function writeJitsiConf(data) {
     return;
   }
 
-  writeTemplates(data, targets);
+  Template.writeMultiple(data, targets);
 }
 
 function makeConfData(data) {
@@ -156,61 +133,14 @@ function getSysConfigs() {
   return data;
 }
 
-function privateIp() {
-  return new Promise((res) => {
-    import("private-ip").then((module) => res(module.default));
-  });
-}
 
-async function getAddresses(data) {
-  const isPrivate = await privateIp();
-  const os = require("os");
-  const interfaces = os.networkInterfaces();
-  let private_ip4, public_ip4, private_ip6, public_ip6;
-  let private_if4, private_subnet_mask;
-
-  for (let name in interfaces) {
-    if (name === 'lo') continue;
-    for (let dev of interfaces[name]) {
-      if (dev.family === 'IPv4') {
-        if (isPrivate(dev.address) && !private_ip4) {
-          private_ip4 = dev.address;
-          private_if4 = name;
-          private_subnet_mask = dev.netmask;
-        }
-        if (!isPrivate(dev.address) && !public_ip4) {
-          public_ip4 = dev.address;
-        }
-      } else if (dev.family === 'IPv6') {
-        if (isPrivate(dev.address) && !private_ip6) private_ip6 = dev.address;
-        if (!isPrivate(dev.address) && !public_ip6) public_ip6 = dev.address;
-      }
-    }
-  }
-
-  data.private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
-  data.private_ip6 = args.private_ip6 || PRIVATE_IP6 || private_ip6;
-  data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
-  data.private_subnet_mask = private_subnet_mask || '255.255.255.0';
-  data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
-  data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6 || '';
-
-  return data;
-}
-
-async function main() {
+function main() {
   const env_root = args.outdir || args.chroot;
   if (env_root) loadSysEnv(env_root);
 
   let data = getSysConfigs();
-  data = await getAddresses(data);
+  data = getAddresses(data);
   data = makeConfData(data);
   writeJitsiConf(data);
 }
-
-main()
-  .then(() => exit(0))
-  .catch((e) => {
-    console.error("Failed to configure Jitsi", e);
-    exit(1);
-  });
+main();

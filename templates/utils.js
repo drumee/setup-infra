@@ -1,18 +1,35 @@
 const argparse = require("argparse");
 const { existsSync } = require("fs");
 const { readFileSync } = require(`jsonfile`);
+const ip = require('@assetval/ip');
+
+const {
+  ACME_DIR,
+  ADMIN_EMAIL,
+  BACKUP_STORAGE,
+  DRUMEE_DATA_DIR,
+  DRUMEE_DB_DIR,
+  DRUMEE_DESCRIPTION,
+  DRUMEE_ROOT,
+  FORCE_INSTALL,
+  HTTP_PORT,
+  HTTPS_PORT,
+  MAX_BODY_SIZE,
+  OWN_CERTS_DIR,
+  PRIVATE_DOMAIN,
+  PRIVATE_IF4,
+  PRIVATE_IP4,
+  PRIVATE_IP6,
+  PUBLIC_DOMAIN,
+  PUBLIC_IP4,
+  PUBLIC_IP6,
+} = process.env;
 
 const parser = new argparse.ArgumentParser({
   description: "Drumee Infrastructure Helper",
   add_help: true,
 });
 
-const {
-  DRUMEE_DATA_DIR,
-  DRUMEE_DB_DIR,
-  ACME_DIR,
-  OWN_CERTS_DIR
-} = process.env;
 
 parser.add_argument("--readonly", {
   type: "int",
@@ -24,6 +41,12 @@ parser.add_argument("--chroot", {
   type: String,
   default: null,
   help: "Output root. Defaulted to /",
+});
+
+parser.add_argument("--debug", {
+  type: "int",
+  default: 0,
+  help: "Debug",
 });
 
 parser.add_argument("--force-install", {
@@ -76,7 +99,7 @@ parser.add_argument("--private-ip6", {
 
 parser.add_argument("--envfile", {
   type: String,
-  help: "Data set required to install Drumee",
+  help: "Dataset required to install Drumee",
 });
 
 parser.add_argument("--localhost", {
@@ -142,10 +165,9 @@ function hasExistingSettings(envfile = '/etc/drumee/drumee.json') {
   if (!existsSync(envfile)) return false;
   const { domain_name } = readFileSync(envfile);
   if (!domain_name) return false;
-  const override = process.env.FORCE_INSTALL || args.force_install;
-  if (override) {
+  if (args.reconfigure == 1) {
     console.log(
-      `There is already a Drumee instance installed on this server but you selected FORCE_INSTALL\n`,
+      `There is already a Drumee instance installed on this server but you selected reconfigure\n`,
       `ALL EXISTING DATA related to ${domain_name} WILL BE LOST\n`,
     );
     return false;
@@ -153,7 +175,7 @@ function hasExistingSettings(envfile = '/etc/drumee/drumee.json') {
   console.log(
     `There is already a Drumee instance installed on this server\n`,
     `domain name = ${domain_name}\n`,
-    `Use --force-install or export FORCE_INSTALL=1\n`,
+    `Use --reconfigure=1 \n`,
     `********************************************\n`,
     `* WARNING : ALL EXISTING DATA WILL BE LOST *\n`,
     `********************************************\n`,
@@ -161,4 +183,101 @@ function hasExistingSettings(envfile = '/etc/drumee/drumee.json') {
   return true;
 }
 
-module.exports = { args, hasExistingSettings };
+/**
+ * 
+ */
+function randomString() {
+  let crypto = require("crypto");
+  return crypto.randomBytes(16).toString("base64").replace(/[\+\/=]+/g, "");
+}
+
+
+/**
+ * 
+ */
+function getAddresses(data) {
+  let os = require("os");
+  let interfaces = os.networkInterfaces();
+  let private_ip4, public_ip4, private_ip6, public_ip6;
+  let private_if4, private_subnet_mask, private_broadcast_address;
+  for (let name in interfaces) {
+    if (name == 'lo') continue;
+    for (let dev of interfaces[name]) {
+      switch (dev.family) {
+        case 'IPv4':
+          if (ip.isPrivate(dev.address) && !private_ip4) {
+            private_ip4 = dev.address;
+            private_if4 = name;
+            private_subnet_mask = dev.netmask;
+            let a = private_ip4.split('.');
+            let b = private_subnet_mask.split('.');
+            let i = 0;
+            let br = [];
+            for (let c of b) {
+              if (c == '255') {
+                br.push(a[i])
+              } else {
+                br.push('255')
+              }
+              i++;
+            }
+            private_broadcast_address = br.join('.')
+          }
+          if (!ip.isPrivate(dev.address) && !public_ip4) {
+            public_ip4 = dev.address;
+          }
+          break;
+        case 'IPv6':
+          if (ip.isPrivate(dev.address) && !private_ip6) {
+            private_ip6 = dev.address;
+          }
+          if (!ip.isPrivate(dev.address) && !public_ip6) {
+            public_ip6 = dev.address;
+          }
+          break;
+      }
+    }
+  }
+
+  data.private_ip6 = args.private_ip6 || PRIVATE_IP6 || private_ip6;
+  data.private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
+  data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
+  data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
+  data.private_broadcast_address = private_broadcast_address || '255.255.255.255';
+  data.private_subnet_mask = private_subnet_mask || '255.255.255.0';
+
+  data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
+  data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
+
+  /** Named extra settings */
+  data.allow_recursion = 'localhost;';
+
+  if (data.public_ip4) {
+    data.allow_recursion = `${data.allow_recursion} ${data.public_ip4};`
+    let a = data.public_ip4.split('.');
+    a.pop();
+    data.reverse_public_ip4 = a.reverse().join('.');
+  } else {
+    data.reverse_public_ip4 = ""
+  }
+
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
+  }
+  if (data.private_ip4) {
+    data.allow_recursion = `${data.allow_recursion} ${data.private_ip4};`
+    let a = data.private_ip4.split('.');
+    a.pop();
+    data.reverse_private_ip4 = a.reverse().join('.');
+  } else {
+    data.reverse_private_ip4 = ""
+  }
+
+  if (!data.public_ip6) {
+    data.public_ip6 = "";
+  }
+
+  return data;
+}
+
+module.exports = { args, parser, hasExistingSettings, randomString, getAddresses };
