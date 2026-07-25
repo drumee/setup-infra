@@ -644,42 +644,6 @@ function writeInfraConf(data) {
   }
 }
 
-
-
-<<<<<<< HEAD:index.js
-/**
- *
- */
-function writeJitsiConf(data) {
-  const etc = 'etc';
-  const jitsi = join(etc, 'jitsi');
-  const prosody = join(etc, 'prosody');
-  const drumee = join(etc, 'drumee');
-  let targets = [
-    `${jitsi}/jicofo/config`,
-    `${jitsi}/jicofo/logging.properties`,
-    `${jitsi}/videobridge/config`,
-    `${jitsi}/videobridge/logging.properties`,
-    `${jitsi}/web/interface_config.js`,
-    `${jitsi}/web/defaults/ffdhe2048.txt`,
-    `${prosody}/defaults/credentials.sh`,
-    `${prosody}/prosody.cfg.lua`,
-  ];
-  if (data.public_domain) {
-    addJitsiConfigsFiles(targets, data, `public`)
-  } else if (data.private_domain) {
-    addJitsiConfigsFiles(targets, data, `private`)
-  } else {
-    console.error(" No domain name available!")
-    return
-  }
-
-  writeTemplates(data, targets);
-
-}
-=======
->>>>>>> e1d29421d9300c629897d59c2f1286997a7d60b3:infra.js
-
 /**
  *
  */
