@@ -301,6 +301,14 @@ function makeData(opt) {
     data.jitsi_private_domain = "";
   }
 
+  // Vendors surface. Same backend as the apex, but served under its own name so
+  // that it carries its own certificate: a wildcard matches exactly ONE label, so
+  // *.<domain> covers vendors.<domain> and nothing below it. The private/LAN name
+  // is derived for completeness, but only the public one gets a vhost — the
+  // self-signed path (bin/create-local-certs) would need a matching .cnf first.
+  data.vendors_public_domain = data.public_domain ? `vendors.${data.public_domain}` : "";
+  data.vendors_private_domain = data.private_domain ? `vendors.${data.private_domain}` : "";
+
   if (data.public_domain) {
     data.use_email = 1;
   } else {
@@ -569,6 +577,9 @@ function writeInfraConf(data) {
       `${infra}/routes/public.conf`,
       `${nginx}/sites-enabled/01-public.conf`,
       `${drumee}/ssl/public.conf`,
+      // vendors.<domain> + *.vendors.<domain>: same backend, own certificate
+      `${nginx}/sites-enabled/03-vendors.public.conf`,
+      `${drumee}/ssl/vendors.public.conf`,
       { tpl: `${libbind}/public.tpl`, out: `${libbind}/${public_domain}` },
       { tpl: `${libbind}/public-reverse.tpl`, out: `${libbind}/${data.public_ip4}` }
     );

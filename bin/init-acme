@@ -84,6 +84,10 @@ failed=0
 
 make_certs $DRUMEE_DOMAIN_NAME $ACME_ENV_FILE
 make_certs $JITSI_DOMAIN $ACME_ENV_FILE
+# vendors.<domain>: its own certificate, because make_certs requests
+# "-d $dom -d *.$dom" and a wildcard covers a single label — the apex cert's
+# *.<domain> does not cover *.vendors.<domain>.
+make_certs $VENDORS_DOMAIN $ACME_ENV_FILE
 
 usermod -a -G $DRUMEE_SYSTEM_GROUP prosody
 usermod -a -G $DRUMEE_SYSTEM_GROUP jvb

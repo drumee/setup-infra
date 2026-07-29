@@ -19,6 +19,9 @@ ns1		60	IN	A	    <%= public_ip4 %>
 ns2		60	IN	A	    <%= public_ip4 %>
 smtp	60	IN	A	    <%= public_ip4 %>
 jit		60	IN	A	    <%= public_ip4 %>
+vendors	60	IN	A	    <%= public_ip4 %>
+; a wildcard answers for one label only: * does not cover *.vendors
+*.vendors	60	IN	A	    <%= public_ip4 %>
 *		60	IN	A	    <%= public_ip4 %>
 ;
 <% } %>
@@ -29,6 +32,9 @@ ns1		60	IN	AAAA	<%= public_ip6 %>
 ns2		60	IN	AAAA	<%= public_ip6 %>
 smtp	60	IN	AAAA	<%= public_ip6 %>
 jit		60	IN	AAAA	<%= public_ip6 %>
+vendors	60	IN	AAAA	<%= public_ip6 %>
+; a wildcard answers for one label only: * does not cover *.vendors
+*.vendors	60	IN	AAAA	<%= public_ip6 %>
 *		60	IN	AAAA	<%= public_ip6 %>
 <% } %>
 ;

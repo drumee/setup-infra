@@ -18,6 +18,7 @@ export NSUPDATE_SERVER=ns1.<%= public_domain %>
 export NSUPDATE_ZONE=<%= public_domain %>
 export PUBLIC_DOMAIN=<%= public_domain %>
 export DRUMEE_DOMAIN_NAME=<%= public_domain %>
+export VENDORS_DOMAIN=<%= vendors_public_domain %>
 <% } %>
 
 <% if (typeof(private_domain) !== "undefined" && private_domain != "" ) { %>
