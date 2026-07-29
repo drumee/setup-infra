@@ -13,6 +13,12 @@ echo "Configuring certificates..."
 function make_certs(){
   sum=0
   dom=$1
+  if [ "$dom" = "" ]; then
+    # Without this an unset name reaches acme.sh as `--issue -d  -d *.` and the
+    # retry loop below spends ~50s failing before reporting anything useful.
+    echo "Skipping certificate request: no domain name given (unset variable?)" >&2
+    return 0
+  fi
   method=dns_nsupdate
   if [ "$2" != "" -a -f "$2" ]; then
     source $2 # source env filen

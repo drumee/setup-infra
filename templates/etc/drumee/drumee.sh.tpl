@@ -19,6 +19,10 @@ export NSUPDATE_ZONE=<%= public_domain %>
 export PUBLIC_DOMAIN=<%= public_domain %>
 export DRUMEE_DOMAIN_NAME=<%= public_domain %>
 export VENDORS_DOMAIN=<%= vendors_public_domain %>
+# Conferencing name. bin/init-acme requests its certificate, bin/prosody and
+# bin/set-jitsi-conf configure the XMPP host from it; all three read JITSI_DOMAIN
+# and got an empty value until this was exported.
+export JITSI_DOMAIN=<%= jitsi_public_domain %>
 <% } %>
 
 <% if (typeof(private_domain) !== "undefined" && private_domain != "" ) { %>
@@ -26,6 +30,7 @@ export ACME_STORE=<%= certs_dir %>/<%= private_domain %>_ecc
 export PRIVATE_DOMAIN=<%= private_domain %>
 <% if (typeof(public_domain) === "undefined" || public_domain == "" ) { %>
 export DRUMEE_DOMAIN_NAME=<%= private_domain %>
+export JITSI_DOMAIN=<%= jitsi_private_domain %>
 <% } %>
 
 <% } %>

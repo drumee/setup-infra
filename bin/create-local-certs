@@ -6,8 +6,13 @@ function self_sign(){
   cnf_dir="/etc/drumee/certs/${domain}_ecc"
   cnf=$cnf_dir/${domain}.cnf
   if [ ! -f $cnf ]; then
-    echo "Local certificates could not be created. $cnf is missing "
-    exit 1
+    # Skip, do NOT abort: bin/install runs with `set -e`, so exiting here takes
+    # the whole installation down (no dirs, no prosody, no crontab) over a
+    # self-signed certificate that only matters on a LAN-only instance. Only the
+    # private domain gets a .cnf rendered (infra.js: certs/private.cnf), so any
+    # other name — the conferencing one, for instance — legitimately has none.
+    echo "WARNING: no openssl config at $cnf — skipping the self-signed certificate for $domain" >&2
+    return 0
   fi
 
   cd $cnf_dir

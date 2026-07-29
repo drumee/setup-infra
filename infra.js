@@ -300,6 +300,11 @@ function makeData(opt) {
   } else {
     data.jitsi_private_domain = "";
   }
+  // The public counterpart was never derived here, even though templates rendered
+  // by infra.js use it — var/lib/bind/public.tpl sets `$ORIGIN <jitsi_public_domain>`
+  // for the conferencing sub-zone, and drumee.sh exports it as JITSI_DOMAIN for
+  // bin/init-acme and bin/prosody.
+  data.jitsi_public_domain = data.public_domain ? `jit.${data.public_domain}` : "";
 
   // Vendors surface. Same backend as the apex, but served under its own name so
   // that it carries its own certificate: a wildcard matches exactly ONE label, so
