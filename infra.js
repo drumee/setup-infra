@@ -8,7 +8,7 @@ const { exit } = process;
 const { loadSysEnv, sysEnv, uniqueId } = require("@drumee/server-essentials");
 const { totalmem, userInfo } = require('os');
 const {
-  existsSync, close, writeSync, openSync, readFileSync, mkdirSync
+  existsSync, close, writeSync, openSync, readFileSync, mkdirSync, unlinkSync
 } = require("fs");
 const { args, hasExistingSettings, getAddresses } = require('./templates/utils')
 
@@ -579,7 +579,11 @@ function writeInfraConf(data) {
     targets.push(
       `${infra}/internals/accel.public.conf`,
       `${infra}/mfs.public.conf`,
-      `${infra}/routes/public.conf`,
+      // One shared route set for every vhost — see routes/app.conf.tpl. The old
+      // per-domain public.conf/private.conf both declared `location /-/`, and
+      // every server block globs routes/*.conf, so rendering both broke nginx
+      // outright on any instance that had a public and a private domain.
+      `${infra}/routes/app.conf`,
       `${nginx}/sites-enabled/01-public.conf`,
       `${drumee}/ssl/public.conf`,
       // vendors.<domain> + *.vendors.<domain>: same backend, own certificate
@@ -612,7 +616,10 @@ function writeInfraConf(data) {
     targets.push(
       `${infra}/internals/accel.private.conf`,
       `${infra}/mfs.private.conf`,
-      `${infra}/routes/private.conf`,
+      // Same shared route set as the public vhost. Rendering it here as well is
+      // harmless — identical content, and it is the only routes file now — but a
+      // private-only instance still needs it written.
+      `${infra}/routes/app.conf`,
       `${nginx}/sites-enabled/02-private.conf`,
       `${drumee}/ssl/private.conf`,
       {
@@ -624,6 +631,25 @@ function writeInfraConf(data) {
     )
   }
 
+
+  // routes/*.conf is glob-included by every vhost, so a file left behind by an
+  // older release is still loaded. public.conf and private.conf declared the same
+  // location prefixes that app.conf now owns, so an upgrade that only added the
+  // new file would keep failing with `duplicate location "/-/"` — the very bug
+  // this replaces. Remove them here rather than in a maintainer script: this is
+  // where the directory's contents are decided.
+  // Template.chroot() resolves these the same way the writes do (--outdir /
+  // --chroot / DRUMEE_CONF_BASE, else /). The target paths above are RELATIVE
+  // ("etc/drumee/..."), so testing them directly would check them against the
+  // process working directory, silently find nothing, and leave the stale files
+  // in place — which is the failure this loop exists to prevent.
+  for (const stale of ['public.conf', 'private.conf']) {
+    const f = Template.chroot(join(infra, 'routes', stale));
+    if (existsSync(f)) {
+      try { unlinkSync(f); console.log(`Removed superseded route file ${f}`); }
+      catch (e) { console.warn(`Could not remove ${f}: ${e.message}`); }
+    }
+  }
 
   writeTemplates(data, targets);
 
