@@ -466,7 +466,19 @@ function getSysConfigs() {
       keep them on the data partition, not the system disk */
   configs.tmp_dir = join(configs.data_dir, 'tmp');
   Template.makedir(Template.chroot(configs.tmp_dir));
-  configs.static_dir = join(configs.runtime_dir, 'static');
+  // drumee_root, NOT runtime_dir: the drumee-static package installs its assets to
+  // /srv/drumee/static (debian/static/build.sh: bundle … "srv/drumee/static"), while
+  // this derived /srv/drumee/runtime/static — a directory that exists but holds only
+  // the runtime-generated certs/*.der. Every consumer of static_dir inherited the
+  // wrong path: the nginx aliases for /-/static/, /-/images/ and /-/fonts/, the
+  // jitsi meet root, DRUMEE_STATIC_DIR in drumee.sh, STATIC_DIR in env.json and
+  // static_dir in the pm2 ecosystem.
+  //
+  // Effect: every stylesheet, font and image 404'd. The page itself was served —
+  // generated live, session cookie and all — so status checks on / and the REST
+  // endpoint both passed while the UI rendered unstyled. Found by fetching the
+  // assets the page references instead of trusting the 200 on the page.
+  configs.static_dir = join(configs.drumee_root, 'static');
 
   let filename = Template.chroot("etc/drumee/drumee.json");
   Template.makedir(dirname(filename));
