@@ -10,6 +10,7 @@ const {
   DRUMEE_DATA_DIR,
   DRUMEE_DB_DIR,
   DRUMEE_DESCRIPTION,
+  DRUMEE_RECONFIGURE,
   DRUMEE_ROOT,
   FORCE_INSTALL,
   HTTP_PORT,
@@ -108,10 +109,18 @@ parser.add_argument("--localhost", {
   help: "If set, write only configs related to localhost setup. No bind",
 });
 
+// Defaults from DRUMEE_RECONFIGURE so a package can drive it: bin/install invokes
+// `node infra.js` with no arguments, so without an environment default there is no
+// way for an operator's answer to reach this. drumee-infra's debconf asks before
+// re-rendering an existing host and exports the variable when the answer is yes.
+//
+// Compared as a string rather than coerced: an unset variable is undefined, and
+// "0"/"false" must not read as true — the whole point is that re-rendering happens
+// only when it was explicitly agreed to.
 parser.add_argument("--reconfigure", {
   type: "int",
-  default: 0,
-  help: "If set, overwrite all exisiting settings",
+  default: (DRUMEE_RECONFIGURE === "1" || DRUMEE_RECONFIGURE === "true") ? 1 : 0,
+  help: "If set, overwrite all exisiting settings (env: DRUMEE_RECONFIGURE=1)",
 });
 
 parser.add_argument("--db-dir", {
