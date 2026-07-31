@@ -486,6 +486,47 @@ function writeCredentials(file, data) {
 }
 
 /**
+ * Return a secret this host already has, so a second render does not mint a new one.
+ *
+ * The three secrets below were generated unconditionally with uniqueId(), which makes
+ * re-rendering destructive in a way the warning about it never spelled out: a second
+ * run overwrites credential/db.json with a password MariaDB has never been told, and
+ * the application loses access to its own database. The mail password is worse still
+ * because it is also embedded in the rendered postfix configuration and stored in the
+ * mailserver tables, so all three copies must agree.
+ *
+ * That is the substance behind hasExistingSettings() refusing to re-render at all —
+ * and therefore behind the fact that no configuration fix can reach an installed
+ * host. Keeping secrets stable is the precondition for ever relaxing that; it does
+ * not relax it by itself.
+ *
+ * `path` walks nested keys (["auth","pass"]). Returns undefined when the file is
+ * missing, unparseable, or holds nothing usable there, so the caller generates a
+ * fresh secret exactly as on a first install.
+ */
+function existingCredential(file, path) {
+  const target = Template.chroot(`etc/drumee/credential/${file}.json`);
+  if (!existsSync(target)) return undefined;
+  try {
+    let node = readJson(target);
+    for (const key of path) {
+      if (!node || typeof node !== "object") return undefined;
+      node = node[key];
+    }
+    if (typeof node === "string" && node !== "") {
+      console.log(`Keeping the existing ${file} secret (${path.join(".")})`);
+      return node;
+    }
+    return undefined;
+  } catch (e) {
+    // Never let an unreadable file silently become a new password — say so, and fall
+    // back to generating, which is the same outcome as a fresh install.
+    console.warn(`Could not read ${target} (${e.message}); generating a new secret`);
+    return undefined;
+  }
+}
+
+/**
  * 
  */
 function errorHandler(err) {
@@ -606,7 +647,10 @@ function writeInfraConf(data) {
     )
     data.dkim_key = getDkim(dkim);
     data.mail_user = MAIL_USER || 'postfix';
-    data.mail_password = uniqueId();
+    // Set before the templates render: this value is embedded in the postfix
+    // configuration written below AND held in the mailserver tables, so minting a
+    // new one on a re-render would break mail on an instance that was working.
+    data.mail_password = existingCredential("postfix", ["password"]) || uniqueId();
     data.smptd_cache_db = "btree:$";
   }
 
@@ -699,7 +743,9 @@ function writeInfraConf(data) {
     })
 
     writeCredentials("db", {
-      password: uniqueId(),
+      // The one that matters most: MariaDB holds this password, and nothing here
+      // re-grants it, so overwriting it locks the application out of its database.
+      password: existingCredential("db", ["password"]) || uniqueId(),
       user: "drumee-app",
       host: "localhost",
     })
@@ -710,7 +756,7 @@ function writeInfraConf(data) {
       secure: false,
       auth: {
         user: `butler@${public_domain}`,
-        pass: uniqueId()
+        pass: existingCredential("email", ["auth", "pass"]) || uniqueId()
       },
       tls: {
         rejectUnauthorized: false
