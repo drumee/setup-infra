@@ -632,23 +632,61 @@ function writeInfraConf(data) {
   }
 
 
-  // routes/*.conf is glob-included by every vhost, so a file left behind by an
-  // older release is still loaded. public.conf and private.conf declared the same
-  // location prefixes that app.conf now owns, so an upgrade that only added the
-  // new file would keep failing with `duplicate location "/-/"` — the very bug
-  // this replaces. Remove them here rather than in a maintainer script: this is
-  // where the directory's contents are decided.
+  // These files are RENDERED, not shipped, so dpkg cannot clean them: purging
+  // drumee-infra leaves every one of them in place, and a reinstall with different
+  // settings then inherits them. Anything nginx loads is dangerous when stale,
+  // because nginx refuses its ENTIRE configuration over one bad include — a single
+  // leftover file takes the whole site down, not just its own vhost. This is
+  // therefore done here, where the tree's contents are decided, rather than in a
+  // maintainer script.
+  //
   // Template.chroot() resolves these the same way the writes do (--outdir /
-  // --chroot / DRUMEE_CONF_BASE, else /). The target paths above are RELATIVE
+  // --chroot / DRUMEE_CONF_BASE, else /). The target paths are RELATIVE
   // ("etc/drumee/..."), so testing them directly would check them against the
-  // process working directory, silently find nothing, and leave the stale files
-  // in place — which is the failure this loop exists to prevent.
-  for (const stale of ['public.conf', 'private.conf']) {
-    const f = Template.chroot(join(infra, 'routes', stale));
-    if (existsSync(f)) {
-      try { unlinkSync(f); console.log(`Removed superseded route file ${f}`); }
+  // process working directory, silently match nothing, and leave the stale files
+  // exactly where they were — which is the failure this exists to prevent.
+  const removeStale = (paths, what) => {
+    for (const p of paths) {
+      const f = Template.chroot(p);
+      if (!existsSync(f)) continue;
+      try { unlinkSync(f); console.log(`Removed superseded ${what}: ${f}`); }
       catch (e) { console.warn(`Could not remove ${f}: ${e.message}`); }
     }
+  };
+
+  // routes/*.conf is glob-included by every vhost, so a file left behind by an
+  // older release is still loaded. public.conf and private.conf declared the same
+  // location prefixes that app.conf now owns, so an upgrade that only added the new
+  // file would keep failing with `duplicate location "/-/"` — the very bug app.conf
+  // replaces.
+  removeStale(
+    [join(infra, 'routes', 'public.conf'), join(infra, 'routes', 'private.conf')],
+    'route file');
+
+  // The private vhost, and the files only it includes. The branch above did not run
+  // — either because own_certs_dir nulled private_domain, or because the instance
+  // has no private address — but a previously rendered 02-private.conf is still in
+  // sites-enabled, including an ssl/private.conf this render deliberately no longer
+  // produces:
+  //
+  //   nginx: [emerg] open() "/etc/drumee/ssl/private.conf" failed (2: No such file
+  //   or directory) in /etc/nginx/sites-enabled/02-private.conf:36
+  //
+  // Measured on a reinstall that switched to own certificates: nginx refused to
+  // start until that one leftover was removed by hand, even though everything this
+  // run produced was correct.
+  //
+  // The public side is the same hazard in principle, but is deliberately NOT swept:
+  // public_domain is set on every supported install (postinst refuses an empty
+  // domain), so a falsy value here would more likely be a bug than an intent — and
+  // acting on it would delete the live vhost that serves the instance.
+  if (!private_domain) {
+    removeStale([
+      join(nginx, 'sites-enabled', '02-private.conf'),
+      join(drumee, 'ssl', 'private.conf'),
+      join(infra, 'internals', 'accel.private.conf'),
+      join(infra, 'mfs.private.conf'),
+    ], 'private vhost file');
   }
 
   writeTemplates(data, targets);
