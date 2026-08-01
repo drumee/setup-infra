@@ -1,5 +1,8 @@
 $TTL 3D
-$ORIGIN <%= reverse_public_ip4 %>.
+; named.conf.local declares this zone as <reverse>.in-addr.arpa, so the origin
+; has to be the same name — a bare "5.168.192." puts every record below it out
+; of zone, and named drops the lot.
+$ORIGIN <%= reverse_public_ip4 %>.in-addr.arpa.
 ;
 @       IN      SOA     ns1.<%= public_domain %>. master.<%= public_domain %>. (
                         <%= serial %>   ; serial, today date + today serial

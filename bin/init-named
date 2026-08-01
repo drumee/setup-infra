@@ -1,27 +1,90 @@
 #!/bin/bash
-set -e
+# Bring up the local authoritative DNS server for this instance.
+#
+# Called by bin/install when this instance is meant to serve its own zone —
+# either to answer the ACME DNS-01 challenge by TSIG-signed dynamic update
+# (tls_method=acme-dns-server), or to give a LAN-only instance a resolver for
+# its own domain (tls_method=self-signed / local mode), where nothing else on
+# the network knows the name at all.
+#
+# NOT set -e. This script used to die on its very first command: `service named
+# stop` exits non-zero when the unit does not exist, which is the normal state
+# on a host where bind9 was never installed — drumee-infra only Recommends it.
+# The abort happened before the tsig key and the log directory were created, so
+# the rendered zone referenced a key file that was never generated, and the
+# whole failure was invisible because bin/install runs this under `set +e`.
+set -u
 source /etc/drumee/drumee.sh
 
 echo "Configuring DNS server for $DRUMEE_DOMAIN_NAME"
 
-service named stop
+# bind9 is a Recommends, not a Depends: three of the five TLS methods have no
+# use for a nameserver, and installing one that squats udp/53 unasked is worse
+# than not having it. So its absence is a normal, reportable outcome.
+if ! command -v named >/dev/null 2>&1; then
+  echo "  bind9 is not installed — no DNS server to configure." >&2
+  echo "  The zone for $DRUMEE_DOMAIN_NAME has been rendered under /var/lib/bind and" >&2
+  echo "  /etc/bind, so installing it is all that is left:" >&2
+  echo "      apt-get install bind9 bind9-utils && dpkg-reconfigure drumee-infra" >&2
+  exit 0
+fi
+
+service named stop >/dev/null 2>&1 || true
+
 mkdir -p /var/log/named/
 chown -R bind:bind /var/log/named/
 mkdir -p /etc/bind/keys/
 
-if [ "$NSUPDATE_KEY" = "" ];then
+if [ "${NSUPDATE_KEY:-}" = "" ]; then
   export NSUPDATE_KEY=/etc/bind/keys/update.key
-fi 
+fi
 
-echo Will use update key from $NSUPDATE_KEY
+# named.conf.local includes this file unconditionally, so a missing key is not
+# merely a lost dynamic-update capability — named refuses to load its entire
+# configuration over it, and the instance ends up with no DNS at all.
+echo "Will use update key from $NSUPDATE_KEY"
 if [ ! -f "$NSUPDATE_KEY" ]; then
-  echo Generating tsig key
-  tsig-keygen -a hmac-sha512 update > $NSUPDATE_KEY
+  if ! command -v tsig-keygen >/dev/null 2>&1; then
+    echo "  tsig-keygen not found (package bind9-utils) — cannot generate $NSUPDATE_KEY." >&2
+    echo "  named would refuse to start on the missing include; not starting it." >&2
+    echo "      apt-get install bind9-utils && dpkg-reconfigure drumee-infra" >&2
+    exit 0
+  fi
+  echo "Generating tsig key"
+  tsig-keygen -a hmac-sha512 update > "$NSUPDATE_KEY"
 fi
 
 chown -R bind:bind /etc/bind
+chmod 0640 "$NSUPDATE_KEY"
 
-echo Restarting named
-service named start
+# Check before restarting rather than after. named refuses its WHOLE
+# configuration over one bad zone declaration, so a duplicate zone or a missing
+# include costs the instance all of DNS, not just the zone at fault — and
+# `service named start` reports that as a bare non-zero exit with the reason
+# only in the journal. Say what is wrong here, while the operator is still
+# watching the install scroll past.
+#
+# Plain named-checkconf, deliberately: it validates the configuration (includes,
+# duplicate zones, syntax) without loading the zone files. `-z` additionally
+# loads every zone, which turns any record-level complaint into "no DNS at all"
+# — a strictly worse outcome than serving the zones that are fine. So -z runs
+# too, but only to report.
+if command -v named-checkconf >/dev/null 2>&1; then
+  if ! checkconf_out=$(named-checkconf 2>&1); then
+    echo "  named-checkconf rejected the rendered configuration:" >&2
+    printf '    %s\n' "$checkconf_out" >&2
+    echo "  Leaving named stopped — starting it would fail the same way." >&2
+    exit 0
+  fi
+  if ! zone_out=$(named-checkconf -z 2>&1); then
+    echo "  note: some zone files did not load cleanly (starting named anyway):" >&2
+    printf '    %s\n' "$zone_out" >&2
+  fi
+fi
 
-echo "DNS server has been successfuly setup!"
+echo "Restarting named"
+if service named start; then
+  echo "DNS server has been successfully setup!"
+else
+  echo "  named failed to start; see: journalctl -u named -n 50" >&2
+fi

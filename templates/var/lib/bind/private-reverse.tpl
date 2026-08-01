@@ -1,5 +1,7 @@
 $TTL 3D
-$ORIGIN <%= reverse_private_ip4 %>.
+; Same as public-reverse.tpl: the origin must match the zone name declared in
+; named.conf.local, in-addr.arpa suffix included.
+$ORIGIN <%= reverse_private_ip4 %>.in-addr.arpa.
 ;
 @       IN      SOA     ns1.<%= private_domain %>. master.<%= private_domain %>. (
                         <%= serial %>   ; serial, today date + today serial

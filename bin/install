@@ -62,7 +62,22 @@ protect_dir $DRUMEE_SERVER_HOME
 protect_dir $DRUMEE_EXPORT_DIR
 protect_dir $DRUMEE_IMPORT_DIR
 
-if [ "$ACME_ENV_FILE" = "" -o  ! -f "$ACME_ENV_FILE" ]; then
+# Whether this instance runs its own authoritative DNS.
+#
+# DRUMEE_DNS_SERVER is the explicit answer, set by drumee-infra's postinst from
+# the tls_method the operator chose:
+#   1 — acme-dns-server (the DNS-01 challenge is answered by local nsupdate)
+#       and self-signed / local mode (a LAN instance is the ONLY thing that
+#       knows its own domain; without a resolver here the name resolves nowhere)
+#   0 — acme-dns-api, caddy, own: the zone stays with the operator's provider,
+#       and squatting udp/53 with a zone nobody queries is not harmless.
+#
+# Unset keeps the historical behaviour for out-of-tree callers, which inferred
+# the same thing from ACME_ENV_FILE alone — an inference that also switched DNS
+# on for tls_method=own, where it was never wanted.
+if [ "${DRUMEE_DNS_SERVER:-}" = "0" ]; then
+  echo "Local DNS server not requested for this TLS method — skipping named."
+elif [ "${DRUMEE_DNS_SERVER:-}" = "1" ] || [ "$ACME_ENV_FILE" = "" -o ! -f "$ACME_ENV_FILE" ]; then
   $base/bin/init-named
 fi
 

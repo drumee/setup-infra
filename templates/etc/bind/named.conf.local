@@ -1,39 +1,62 @@
 //
 // Configs setup by Drumee setup-infra utility
 //
-
+<%
+  // Mirror EXACTLY the conditions infra.js uses to decide which zone files it
+  // writes (`data.public_ip4 && public_domain`, `data.private_ip4 &&
+  // private_domain`). Declaring a zone whose file was never rendered makes
+  // named reject its whole configuration, not just that zone, so the two sides
+  // have to agree — they did not: the public reverse block was emitted from
+  // reverse_public_ip4 alone, which survives own_certs_dir nulling the domain.
+  var dns_pub_domain  = (typeof(public_domain)       !== "undefined" && public_domain)       ? public_domain       : "";
+  var dns_priv_domain = (typeof(private_domain)      !== "undefined" && private_domain)      ? private_domain      : "";
+  var dns_pub_ip      = (typeof(public_ip4)          !== "undefined" && public_ip4)          ? public_ip4          : "";
+  var dns_priv_ip     = (typeof(private_ip4)         !== "undefined" && private_ip4)         ? private_ip4         : "";
+  var dns_pub_rev     = (typeof(reverse_public_ip4)  !== "undefined" && reverse_public_ip4)  ? reverse_public_ip4  : "";
+  var dns_priv_rev    = (typeof(reverse_private_ip4) !== "undefined" && reverse_private_ip4) ? reverse_private_ip4 : "";
+  var dns_want_pub    = dns_pub_domain  && dns_pub_ip;
+  var dns_want_priv   = dns_priv_domain && dns_priv_ip;
+  // A single-NIC host — every LAN box, and the whole point of the self-signed
+  // path — has private_ip4 == public_ip4, so both halves derive the SAME
+  // reverse zone. Declaring "5.168.192.in-addr.arpa" twice is a hard error
+  // ("zone already exists"), and named then serves nothing at all.
+  var dns_dup_rev     = dns_want_pub && dns_want_priv && dns_pub_rev === dns_priv_rev;
+%>
 include "/etc/bind/named.conf.log";
 include "<%= nsupdate_key %>";
-<% if (typeof(public_domain) !== "undefined" && public_domain != "" ) { %>
-zone "<%= public_domain %>" {
+<% if (dns_want_pub) { %>
+zone "<%= dns_pub_domain %>" {
     type master;
-    file "/var/lib/bind/<%= public_domain %>";
+    file "/var/lib/bind/<%= dns_pub_domain %>";
     allow-query { any; };
     allow-update { key "update"; };
-    allow-transfer { <%= public_ip4 %>; };
+    allow-transfer { <%= dns_pub_ip %>; };
 };
 <% } %>
-<% if (typeof(reverse_public_ip4) !== "undefined" && reverse_public_ip4 != "" ) { %>
-zone "<%= reverse_public_ip4 %>.in-addr.arpa" {
+<% if (dns_want_pub && dns_pub_rev) { %>
+zone "<%= dns_pub_rev %>.in-addr.arpa" {
     type master;
-    file "/var/lib/bind/<%= reverse_public_ip4 %>";
+    // infra.js renders public-reverse.tpl to /var/lib/bind/<public_ip4>, not to
+    // <reverse_public_ip4>. Naming the reverse form here pointed the zone at a
+    // file that is never written.
+    file "/var/lib/bind/<%= dns_pub_ip %>";
     allow-query { any; };
 };
 <% } %>
 
-<% if (typeof(private_domain) !== "undefined" && private_domain != "" ) { %>
-zone "<%= private_domain %>" {
+<% if (dns_want_priv) { %>
+zone "<%= dns_priv_domain %>" {
     type master;
-    file "/var/lib/bind/<%= private_domain %>";
+    file "/var/lib/bind/<%= dns_priv_domain %>";
     allow-query { any; };
     allow-update { key "update"; };
-    allow-transfer { <%= private_ip4 %>; };
+    allow-transfer { <%= dns_priv_ip %>; };
 };
 <% } %>
-<% if (typeof(reverse_private_ip4) !== "undefined" && reverse_private_ip4 != "" ) { %>
-zone "<%= reverse_private_ip4 %>.in-addr.arpa" {
+<% if (dns_want_priv && dns_priv_rev && !dns_dup_rev) { %>
+zone "<%= dns_priv_rev %>.in-addr.arpa" {
     type master;
-    file "/var/lib/bind/<%= private_ip4 %>";
+    file "/var/lib/bind/<%= dns_priv_ip %>";
     allow-query { any; };
 };
 <% } %>
