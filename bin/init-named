@@ -25,7 +25,12 @@ if ! command -v named >/dev/null 2>&1; then
   echo "  bind9 is not installed — no DNS server to configure." >&2
   echo "  The zone for $DRUMEE_DOMAIN_NAME has been rendered under /var/lib/bind and" >&2
   echo "  /etc/bind, so installing it is all that is left:" >&2
-  echo "      apt-get install bind9 bind9-utils && dpkg-reconfigure drumee-infra" >&2
+  # --force-confnew is load-bearing: bind9 ships /etc/bind/named.conf.local as a
+  # conffile and the render above has already put ours there, so a plain install
+  # stops at a conffile prompt and dpkg fails on a non-interactive stdin. The
+  # reconfigure then renders ours back over the maintainer's.
+  echo "      apt-get install -o Dpkg::Options::=--force-confnew bind9 bind9-utils" >&2
+  echo "      dpkg-reconfigure drumee-infra" >&2
   exit 0
 fi
 

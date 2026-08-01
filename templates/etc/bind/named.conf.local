@@ -14,8 +14,16 @@
   var dns_priv_ip     = (typeof(private_ip4)         !== "undefined" && private_ip4)         ? private_ip4         : "";
   var dns_pub_rev     = (typeof(reverse_public_ip4)  !== "undefined" && reverse_public_ip4)  ? reverse_public_ip4  : "";
   var dns_priv_rev    = (typeof(reverse_private_ip4) !== "undefined" && reverse_private_ip4) ? reverse_private_ip4 : "";
+  var dns_own_certs   = (typeof(own_certs_dir)       !== "undefined" && own_certs_dir)       ? own_certs_dir       : "";
   var dns_want_pub    = dns_pub_domain  && dns_pub_ip;
-  var dns_want_priv   = dns_priv_domain && dns_priv_ip;
+  // own_certs_dir nulls the private domain in infra.js — but it does so on a
+  // LOCAL variable, so data.private_domain stays populated and this template
+  // still sees it. Mirror the nulling here or the private zone gets declared
+  // while its file is never written, and named refuses the whole configuration
+  // over the missing file. Observed on a host that had been switched away from
+  // tls_method=own: own_certs_dir persists in the rendered config, and only a
+  // zone file left behind by an earlier render kept named loading at all.
+  var dns_want_priv   = dns_priv_domain && dns_priv_ip && !dns_own_certs;
   // A single-NIC host — every LAN box, and the whole point of the self-signed
   // path — has private_ip4 == public_ip4, so both halves derive the SAME
   // reverse zone. Declaring "5.168.192.in-addr.arpa" twice is a hard error
