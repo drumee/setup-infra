@@ -81,11 +81,23 @@ elif [ "${DRUMEE_DNS_SERVER:-}" = "1" ] || [ "$ACME_ENV_FILE" = "" -o ! -f "$ACM
   $base/bin/init-named
 fi
 
-if [ "$PRIVATE_DOMAIN" != "" ]; then
+# Also on the self-signed path even with no private domain: there, this script is
+# the only thing that certifies the PUBLIC names, so gating it on the private one
+# would leave nginx with no certificate at all.
+if [ "$PRIVATE_DOMAIN" != "" -o "${DRUMEE_TLS_METHOD:-}" = "self-signed" ]; then
   $base/bin/create-local-certs
 fi
 
-if [ "$PUBLIC_DOMAIN" != "" -a "$OWN_CERTS_DIR" = "" ]; then
+# Certificates. The self-signed path must NOT reach init-acme: it issues a
+# wildcard over DNS-01 for a name that, on a LAN instance, is delegated nowhere,
+# so every attempt fails — and make_certs retries eleven times with sleeps
+# between, which is minutes of guaranteed failure at install time. Worse, it is
+# not even a no-op: it registers an ACME account for an address that will never
+# validate. create-local-certs above has already produced a certificate for
+# every public name on this path.
+if [ "${DRUMEE_TLS_METHOD:-}" = "self-signed" ]; then
+  echo "Self-signed TLS: skipping ACME (a private domain cannot answer a DNS-01 challenge)."
+elif [ "$PUBLIC_DOMAIN" != "" -a "$OWN_CERTS_DIR" = "" ]; then
   $base/bin/init-acme
 fi
 

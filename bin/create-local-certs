@@ -1,43 +1,141 @@
 #!/bin/bash
+# Self-signed certificates for the names this instance serves.
+#
+# On the self-signed path (tls_method=self-signed, i.e. every LAN-only instance)
+# this is the ONLY thing that produces a certificate — nothing else runs. It
+# therefore has to cover every name the rendered nginx tree references, in the
+# file layout that tree reads, or nginx refuses its whole configuration and the
+# instance serves nothing at all.
+#
+# Two layouts are in play, and both are emitted for every name because the
+# templates disagree about which they read:
+#
+#   templates/etc/drumee/ssl/public.conf.tpl          fullchain.cer + ca.cer + <name>.key
+#   templates/etc/drumee/ssl/vendors.public.conf.tpl  fullchain.cer + ca.cer + <name>.key
+#   templates/etc/jitsi/ssl.conf.tpl                  fullchain.cer + ca.cer + <name>.key
+#   templates/etc/jitsi/ssl.public.conf.tpl           fullchain.cer + ca.cer + <name>.key
+#   templates/etc/nginx/.../turnrelay.conf.tpl        fullchain.cer + ca.cer + <name>.key
+#   templates/etc/drumee/ssl/private.conf.tpl         <name>.cer + <name>.key
+#   templates/etc/jitsi/ssl.private.conf.tpl          <name>.cer + <name>.key
+#
+# fullchain.cer/ca.cer are the acme.sh layout: before this, only ACME (or Caddy's
+# exporter, or an operator's own certs) ever produced them, while infra.js renders
+# the public and vendors vhosts whenever a domain is set — regardless of TLS
+# method. A maiden self-signed install therefore always named three files nothing
+# created. For a self-signed certificate the chain IS the certificate, so both
+# names are copies of it.
+
+# The openssl config is generated here rather than taken from the rendered
+# templates/etc/drumee/certs/*.cnf, which carry `CN = *.<domain>` and NO
+# subjectAltName. Every current browser ignores CN entirely and requires a SAN,
+# and a wildcard CN would not have covered the apex anyway — so the rendered
+# certificate was one nothing would accept. Generating it also means names with
+# no rendered .cnf (the conferencing and vendors names) stop being skipped.
+function write_cnf(){
+  local domain=$1 out=$2
+  cat > "$out" <<EOF
+[ req ]
+default_bits        = 2048
+prompt              = no
+default_md          = sha256
+distinguished_name  = dn
+x509_extensions     = v3_self
+
+[ dn ]
+C  = XX
+O  = Drumee Web OS
+OU = Drumee API services
+CN = ${domain}
+
+[ v3_self ]
+# The apex AND one wildcard level: a wildcard matches exactly one label, so
+# *.${domain} does not answer for anything deeper.
+subjectAltName       = DNS:${domain}, DNS:*.${domain}
+basicConstraints     = critical, CA:TRUE
+keyUsage             = critical, digitalSignature, keyEncipherment, keyCertSign
+extendedKeyUsage     = serverAuth
+EOF
+}
+
+# Names already done in this run. JITSI_DOMAIN is jit.<public_domain> when a
+# public domain exists, so it and the public branch below name the same host;
+# signing it twice would replace a key another step may already have read.
+SIGNED=""
 
 function self_sign(){
-  domain=$1
-  echo "Configuring certificates for $1..."
-  cnf_dir="/etc/drumee/certs/${domain}_ecc"
-  cnf=$cnf_dir/${domain}.cnf
-  if [ ! -f $cnf ]; then
-    # Skip, do NOT abort: bin/install runs with `set -e`, so exiting here takes
-    # the whole installation down (no dirs, no prosody, no crontab) over a
-    # self-signed certificate that only matters on a LAN-only instance. Only the
-    # private domain gets a .cnf rendered (infra.js: certs/private.cnf), so any
-    # other name — the conferencing one, for instance — legitimately has none.
-    echo "WARNING: no openssl config at $cnf — skipping the self-signed certificate for $domain" >&2
+  local domain=$1
+  [ "$domain" = "" ] && return 0
+  case " $SIGNED " in *" $domain "*) return 0 ;; esac
+  SIGNED="$SIGNED $domain"
+  local dir="${CERTS_DIR:-/etc/drumee/certs}/${domain}_ecc"
+  echo "Self-signing certificate for $domain"
+  mkdir -p "$dir" || return 0
+
+  local cnf="$dir/${domain}.cnf"
+  write_cnf "$domain" "$cnf"
+
+  # No `set -e` in this script and bin/install calls it under `set +e`, so a
+  # failure here must not be silent: without a certificate nginx will not start,
+  # and that is worth naming at install time rather than leaving in a journal.
+  if ! openssl req -x509 -newkey rsa:4096 -keyout "$dir/${domain}.key" \
+        -out "$dir/${domain}.cer" -sha256 -days 3650 -nodes -config "$cnf" 2>/dev/null; then
+    echo "ERROR: could not self-sign $domain — nginx will have no certificate for it." >&2
     return 0
   fi
 
-  cd $cnf_dir
+  # Both layouts. Self-signed: the certificate is its own chain and its own
+  # trust anchor, so fullchain and ca are copies rather than a real chain.
+  cp -f "$dir/${domain}.cer" "$dir/fullchain.cer"
+  cp -f "$dir/${domain}.cer" "$dir/ca.cer"
+  chmod 0640 "$dir/${domain}.key"
 
-  openssl req -x509 -newkey rsa:4096 -keyout ${domain}.key -out ${domain}.cer -sha256 -days 3650 -nodes -config $cnf
+  # .crt, not .cer: update-ca-certificates only considers *.crt and silently
+  # ignored every file this script used to install, so none of these
+  # certificates were ever actually trusted by the host.
+  #
+  # The private key is deliberately NOT copied here any more. It used to be,
+  # world-readable, into a directory whose entire purpose is public trust
+  # material.
+  local target=/usr/local/share/ca-certificates
+  mkdir -p "$target"
+  cp -f "$dir/${domain}.cer" "$target/${domain}.crt"
 
-  target=/usr/local/share/ca-certificates
-  cp ${domain}.cer $target/
-  cp ${domain}.key $target/
-  chmod g+r $target/${domain}.key
-  openssl x509 -outform der -in ${domain}.cer -out $DRUMEE_STATIC_DIR/certs/${domain}.der
+  # DER copy for the UI, which offers the CA for download so a LAN client can
+  # trust it.
+  if [ -n "${DRUMEE_STATIC_DIR:-}" ] && [ -d "$DRUMEE_STATIC_DIR/certs" ]; then
+    openssl x509 -outform der -in "$dir/${domain}.cer" \
+      -out "$DRUMEE_STATIC_DIR/certs/${domain}.der" 2>/dev/null
+  fi
 }
 
 #-------------------
-mkdir -p $DRUMEE_STATIC_DIR/certs
+mkdir -p "${DRUMEE_STATIC_DIR:-/srv/drumee/static}/certs"
 
+# The private names, as before: their vhosts are rendered whenever a private
+# domain exists, whatever the TLS method, and nothing else ever certifies them.
 if [ "$PRIVATE_DOMAIN" != "" ]; then
-  self_sign $PRIVATE_DOMAIN
+  self_sign "$PRIVATE_DOMAIN"
+  self_sign "jit.$PRIVATE_DOMAIN"
 fi
 
+# JITSI_DOMAIN is the public conferencing name when a public domain exists and
+# the private one otherwise (see drumee.sh.tpl), so it is signed separately.
 if [ "$JITSI_DOMAIN" != "" ]; then
-  self_sign $JITSI_DOMAIN
+  self_sign "$JITSI_DOMAIN"
 fi
 
-
+# The public names, only on the self-signed path.
+#
+# Deliberately NOT done for the ACME, caddy and own methods: there, a real
+# certificate is expected at these exact paths, and putting a self-signed one
+# there first would mean an instance whose issuance silently failed serves a
+# certificate no client accepts instead of failing where it can be seen.
+# DRUMEE_TLS_METHOD is exported by drumee-infra's postinst; unset keeps the old
+# behaviour for out-of-tree callers.
+if [ "${DRUMEE_TLS_METHOD:-}" = "self-signed" ] && [ "$PUBLIC_DOMAIN" != "" ]; then
+  self_sign "$PUBLIC_DOMAIN"
+  self_sign "${VENDORS_DOMAIN:-vendors.$PUBLIC_DOMAIN}"
+  self_sign "jit.$PUBLIC_DOMAIN"
+fi
 
 update-ca-certificates
-
