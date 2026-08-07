@@ -1,6 +1,6 @@
 {
   "name": "@drumee/setup-infra",
-  "version": "1.0.40",
+  "version": "1.0.41",
   "description": "Drumee Infrastructure Setup Utilities",
   "main": "infra.js",
   "scripts": {
