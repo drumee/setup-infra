@@ -13,12 +13,28 @@ if [ "$PUBLIC_DOMAIN" != "" ]; then
   $base/bin/init-mail $PUBLIC_DOMAIN
 fi
 
-# Generate all the required settings 
+# Generate all the required settings
+#
+# RECONF forwards the reconfigure intent to the renderers. Without it this script was
+# the reason `dpkg-reconfigure drumee-infra` could not change anything on an installed
+# host: dpkg-reconfigure calls `postinst configure`, that arm calls this script, and
+# this script called infra.js with no arguments — so hasExistingSettings() found
+# /etc/drumee/drumee.json, printed "Use --reconfigure=1" and returned true, and
+# nothing was re-rendered. Every "then: dpkg-reconfigure drumee-infra" in postinst
+# pointed at a command that reported success and did nothing.
+#
+# Set by drumee-infra's postinst from DEBCONF_RECONFIGURE (which dpkg-reconfigure
+# exports) or from the reconfigure_existing debconf answer. Unset on a fresh install
+# and on a plain upgrade, where re-rendering over an operator's tree is exactly what
+# must NOT happen silently.
+RECONF=""
+[ "${DRUMEE_RECONFIGURE:-0}" = "1" ] && RECONF="--reconfigure=1"
+
 if [ -f ${base}/${DRUMEE_COMPONENTS}.js ]; then 
-  node ${base}/${DRUMEE_COMPONENTS}.js
+  node ${base}/${DRUMEE_COMPONENTS}.js $RECONF
 else
-  node ${base}/infra.js
-  node ${base}/jitsi.js
+  node ${base}/infra.js $RECONF
+  node ${base}/jitsi.js $RECONF
 fi
 
 if [ ! -e /etc/drumee/drumee.sh ]; then 
