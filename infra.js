@@ -440,8 +440,20 @@ function getSysConfigs() {
   configs.domain = public_domain || private_domain;
   configs.public_domain = public_domain;
   configs.private_domain = private_domain;
-  configs.main_domain = data.domain;
-  configs.domain_name = data.domain;
+  // configs.domain, not data.domain. `data` comes from sysEnv(), i.e. whatever the
+  // machine already had — so on a host with no prior configuration these two keys were
+  // written as "localhost" while every other file in the same render carried the real
+  // domain. Reproduced in a container: `infra.js --chroot=X --public-domain=example.com`
+  // wrote DRUMEE_DOMAIN_NAME=example.com into drumee.sh and "domain_name": "localhost"
+  // into drumee.json, from one run. It only looked correct where PUBLIC_DOMAIN happened
+  // to be exported as well, or where a previous render had already left the value in
+  // /etc/drumee/drumee.json for sysEnv() to read back.
+  //
+  // configs.domain is `public_domain || private_domain` resolved a few lines above with
+  // infra.js's own precedence (--public-domain beats the environment), so this is the
+  // one authoritative answer for this run.
+  configs.main_domain = configs.domain;
+  configs.domain_name = configs.domain;
   configs.log_dir = data.log_dir;
 
   configs.socketPath = getSocketPath();
@@ -567,6 +579,16 @@ function copyConfigs(items) {
  */
 function getDkim(file) {
   let p = Template.chroot(file);
+  // A missing key costs mail signing; it must not cost the configuration. This used to
+  // be a bare readFileSync, so any render on a public domain died with an unhandled
+  // ENOENT on etc/opendkim/keys/<domain>/dkim.txt — no nginx config, no drumee.sh,
+  // nothing — unless the caller had generated the key first. That ordering requirement
+  // was undocumented and cost a container render its entire output.
+  if (!existsSync(p)) {
+    console.warn(`No DKIM key at ${p} — rendering an empty DKIM record.`);
+    console.warn(`  Outbound mail will not be signed until opendkim-genkey has run.`);
+    return '"v=DKIM1; k=rsa; p="';
+  }
   let content = readFileSync(p);
   let str = Buffer.from(content, "utf8");
   let v = `v=DKIM1; k=rsa; p=${str.toString()}`;
