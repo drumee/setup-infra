@@ -2,6 +2,7 @@ const argparse = require("argparse");
 const { existsSync } = require("fs");
 const { readFileSync } = require(`jsonfile`);
 const ip = require('@assetval/ip');
+const { isPublishableIp6 } = require("./ip6");
 
 const {
   ACME_DIR,
@@ -244,6 +245,10 @@ function getAddresses(data) {
           }
           break;
         case 'IPv6':
+          // A link-local address must never reach a zone file — see ip6.js. The ip
+          // module classes fe80::/10 as private, so without this guard a box whose
+          // only IPv6 is link-local published it as the AAAA of every name it serves.
+          if (!isPublishableIp6(dev.address)) break;
           if (ip.isPrivate(dev.address) && !private_ip6) {
             private_ip6 = dev.address;
           }
@@ -255,7 +260,12 @@ function getAddresses(data) {
     }
   }
 
-  data.private_ip6 = args.private_ip6 || PRIVATE_IP6 || private_ip6;
+  // Normalized to "" rather than left undefined, exactly as public_ip6 is below:
+  // the zone templates gate their AAAA block on `!== "undefined" && != ""`, and an
+  // operator-supplied value gets the same guard as a detected one — an explicit
+  // --private-ip6 fe80::1 is no more publishable than a detected one.
+  data.private_ip6 = args.private_ip6 || PRIVATE_IP6 || private_ip6 || "";
+  if (!isPublishableIp6(data.private_ip6)) data.private_ip6 = "";
   data.private_ip4 = args.private_ip4 || PRIVATE_IP4 || private_ip4;
   data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
   data.private_if4 = args.private_ip4 || PRIVATE_IF4 || private_if4;
@@ -263,7 +273,8 @@ function getAddresses(data) {
   data.private_subnet_mask = private_subnet_mask || '255.255.255.0';
 
   data.public_ip4 = args.public_ip4 || PUBLIC_IP4 || public_ip4;
-  data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6;
+  data.public_ip6 = args.public_ip6 || PUBLIC_IP6 || public_ip6 || "";
+  if (!isPublishableIp6(data.public_ip6)) data.public_ip6 = "";
 
   /** Named extra settings */
   data.allow_recursion = 'localhost;';
