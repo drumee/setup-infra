@@ -174,7 +174,14 @@ function hasExistingSettings(envfile = '/etc/drumee/drumee.json') {
   if (!existsSync(envfile)) return false;
   const { domain_name } = readFileSync(envfile);
   if (!domain_name) return false;
-  if (args.reconfigure == 1) {
+  // --force-install is accepted as an alias for --reconfigure. It was declared
+  // (below, "Override existing configs") but read by nothing, so a caller passing
+  // it got the opposite of what it says: the guard held, infra.js exit(0)'d, and the
+  // caller saw success with nothing re-rendered. drumee-infra's postinst passed
+  // exactly that on `dpkg-reconfigure`, which is why no configuration fix could
+  // reach an installed host. Kept rather than removed: an already-deployed postinst
+  // still passes it, and deleting the option would turn that into an argparse error.
+  if (args.reconfigure == 1 || args.force_install == 1 || args.force_install === "true") {
     console.log(
       `There is already a Drumee instance installed on this server but you selected reconfigure\n`,
       `ALL EXISTING DATA related to ${domain_name} WILL BE LOST\n`,
