@@ -149,16 +149,36 @@ EOF
       && echo "  systemd-resolved: $dom routed to the local named"
   elif systemctl is-active --quiet NetworkManager 2>/dev/null \
        && command -v nmcli >/dev/null 2>&1; then
-    # +ipv4.dns prepends to what DHCP supplies rather than replacing it. Deliberately
-    # NOT followed by `nmcli con up`: on the documented install path this script runs
-    # over ssh, and bouncing the connection carrying the install to apply a DNS entry
-    # is a poor trade. The live file is edited below, so it takes effect now anyway.
-    local c
-    while IFS= read -r c; do
+    # ipv4.dns is an ORDERED list and NetworkManager writes resolv.conf in that
+    # order, so 127.0.0.1 has to be its first element — not appended.
+    #
+    # This was `+ipv4.dns 127.0.0.1` in 1.2.28 and it did not survive a reboot,
+    # which is worth recording because the failure was silent and looked fine until
+    # then. `+` appends, so the profile ended up "8.8.8.8,127.0.0.1"; the live file
+    # edited below still worked, so the install reported success. On the next boot NM
+    # regenerated resolv.conf from the profile, in profile order, and the box asked
+    # 8.8.8.8 for its own domain. glibc does NOT fall through to the next server on
+    # NXDOMAIN — only on refusal or timeout — so an authoritative "no such name" from
+    # a public resolver is final, and on-box resolution was broken again.
+    #
+    # Rewriting the whole list keeps the previous servers as fallback behind ours,
+    # which is the same shape as the resolv.conf edit below.
+    #
+    # Deliberately NOT followed by `nmcli con up`: on the documented install path this
+    # runs over ssh, and bouncing the connection carrying the install to apply a DNS
+    # entry is a poor trade. The live file is edited below, so it applies now anyway.
+    local c t cur rest
+    while IFS=: read -r c t; do
       [ -n "$c" ] || continue
-      nmcli connection modify "$c" +ipv4.dns 127.0.0.1 >/dev/null 2>&1 \
-        && echo "  NetworkManager: 127.0.0.1 prepended to DNS on '$c'"
-    done < <(nmcli -t -f NAME connection show --active 2>/dev/null)
+      # Loopback carries no useful DNS and 1.2.28 wrote to it anyway. Harmless, but
+      # it is not ours to modify.
+      [ "$t" = loopback ] && continue
+      cur="$(nmcli -g ipv4.dns connection show "$c" 2>/dev/null)"
+      rest="$(printf '%s' "$cur" | tr ',' '\n' | grep -vxF '127.0.0.1' | paste -sd, -)"
+      if nmcli connection modify "$c" ipv4.dns "127.0.0.1${rest:+,$rest}" >/dev/null 2>&1; then
+        echo "  NetworkManager: DNS on '$c' is now 127.0.0.1${rest:+,$rest}"
+      fi
+    done < <(nmcli -t -f NAME,TYPE connection show --active 2>/dev/null)
   fi
 
   # ---- make it effective now ----------------------------------------------
@@ -184,10 +204,28 @@ EOF
   echo "  /etc/resolv.conf: 127.0.0.1 is now the first nameserver"
 }
 
+# Ask the question the operator would ask, through the SYSTEM resolver rather than by
+# querying named directly. That distinction is the whole point: 1.2.28 configured the
+# resolver in a way that worked when queried directly and failed through nsswitch after
+# a reboot. A check that talks to 127.0.0.1 explicitly would have passed.
+report_own_domain_resolution() {
+  local dom="$DRUMEE_DOMAIN_NAME" got
+  got="$(getent hosts "$dom" 2>/dev/null | awk '{print $1; exit}')"
+  if [ -n "$got" ]; then
+    echo "  this host resolves $dom -> $got"
+  else
+    echo "  warning: this host still cannot resolve $dom through its own resolver." >&2
+    echo "  On-box checks against the domain (drumee-ctl doctor, health probes) will" >&2
+    echo "  fail while everything works from the rest of the LAN. Current state:" >&2
+    sed 's/^/    /' /etc/resolv.conf >&2
+  fi
+}
+
 echo "Restarting named"
 if service named start; then
   echo "DNS server has been successfully setup!"
   point_host_at_named
+  report_own_domain_resolution
 else
   echo "  named failed to start; see: journalctl -u named -n 50" >&2
 fi
