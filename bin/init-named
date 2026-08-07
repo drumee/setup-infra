@@ -87,9 +87,107 @@ if command -v named-checkconf >/dev/null 2>&1; then
   fi
 fi
 
+
+# ---------------------------------------------------------------------------
+# Make THIS host resolve the zone it now serves.
+#
+# Serving a zone is not the same as using it. A LAN instance came up with named
+# answering $DRUMEE_DOMAIN_NAME for the whole network while /etc/resolv.conf still
+# pointed at the DHCP resolver, so the box could not resolve its own name: on-box
+# `curl https://$DRUMEE_DOMAIN_NAME/` returned nothing while the identical request
+# from any other machine on the LAN got the site. Everything on-box that refers to
+# the instance by name resolved against a resolver that has never heard of the
+# domain — drumee-ctl doctor's TLS probe, health checks, the password-reset URL in
+# the welcome email if it is followed locally.
+#
+# Safe to do, for two reasons that are worth stating because both are load-bearing:
+#
+#  * the rendered named.conf.options sets `recursion yes` with public forwarders, so
+#    127.0.0.1 is a complete resolver rather than an authoritative island. Pointing
+#    the host at it does not cost it the rest of the internet.
+#  * it goes in as the FIRST nameserver with the existing ones kept behind it. The
+#    glibc resolver moves to the next server on refusal or timeout, so a named that
+#    is down costs a retry, not all DNS. Never replace the list.
+# ---------------------------------------------------------------------------
+point_host_at_named() {
+  local dom="$DRUMEE_DOMAIN_NAME" answered=""
+
+  # Ask the server we are about to trust whether it actually knows the zone. Better
+  # to leave the resolver alone than to point it at a named that loaded a broken
+  # configuration — named-checkconf above passes on configurations whose zone files
+  # do not load.
+  if command -v dig >/dev/null 2>&1; then
+    dig +short +time=2 +tries=1 SOA "$dom" @127.0.0.1 2>/dev/null | grep -q . && answered=1
+  elif command -v host >/dev/null 2>&1; then
+    host -W 2 -t SOA "$dom" 127.0.0.1 >/dev/null 2>&1 && answered=1
+  else
+    # No query tool at all (bind9-dnsutils and bind9-host both absent). named
+    # started, so proceed rather than skipping the fix over a missing diagnostic.
+    answered=1
+  fi
+  if [ -z "$answered" ]; then
+    echo "  note: named does not answer SOA for $dom on 127.0.0.1 — leaving" >&2
+    echo "  /etc/resolv.conf untouched. Check: journalctl -u named -n 50" >&2
+    return 0
+  fi
+
+  # ---- persist it, per resolver manager ------------------------------------
+  # Each manager regenerates resolv.conf on its own schedule, so writing the file
+  # alone is a fix that survives until the next reboot. Configure the manager for
+  # the persistent half, then edit the live file for the immediate half.
+  if systemctl is-active --quiet systemd-resolved 2>/dev/null; then
+    mkdir -p /etc/systemd/resolved.conf.d
+    # Split DNS: only this domain is routed to the local named, everything else
+    # keeps the path it already had. The narrowest change that fixes the problem.
+    cat > /etc/systemd/resolved.conf.d/10-drumee.conf <<EOF
+# Written by drumee-infra (bin/init-named). This host serves $dom itself.
+[Resolve]
+DNS=127.0.0.1
+Domains=~$dom
+EOF
+    systemctl restart systemd-resolved >/dev/null 2>&1 \
+      && echo "  systemd-resolved: $dom routed to the local named"
+  elif systemctl is-active --quiet NetworkManager 2>/dev/null \
+       && command -v nmcli >/dev/null 2>&1; then
+    # +ipv4.dns prepends to what DHCP supplies rather than replacing it. Deliberately
+    # NOT followed by `nmcli con up`: on the documented install path this script runs
+    # over ssh, and bouncing the connection carrying the install to apply a DNS entry
+    # is a poor trade. The live file is edited below, so it takes effect now anyway.
+    local c
+    while IFS= read -r c; do
+      [ -n "$c" ] || continue
+      nmcli connection modify "$c" +ipv4.dns 127.0.0.1 >/dev/null 2>&1 \
+        && echo "  NetworkManager: 127.0.0.1 prepended to DNS on '$c'"
+    done < <(nmcli -t -f NAME connection show --active 2>/dev/null)
+  fi
+
+  # ---- make it effective now ----------------------------------------------
+  # Only a regular file. Under systemd-resolved or resolvconf this is a symlink into
+  # /run, owned by that daemon; rewriting it would be undone and could leave a
+  # dangling stub. The manager branch above has already handled those.
+  if [ -L /etc/resolv.conf ]; then
+    echo "  /etc/resolv.conf is managed by a daemon (symlink) — left as it is"
+    return 0
+  fi
+  if [ "$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf 2>/dev/null)" = "127.0.0.1" ]; then
+    return 0
+  fi
+  local tmp; tmp=$(mktemp)
+  {
+    echo "# 127.0.0.1 added by drumee-infra: this host is authoritative for $dom."
+    echo "# The servers below are kept as fallback; glibc tries them if named is down."
+    echo "nameserver 127.0.0.1"
+    grep -v '^# 127.0.0.1 added by drumee-infra' /etc/resolv.conf 2>/dev/null \
+      | grep -v '^# The servers below are kept as fallback'
+  } > "$tmp"
+  cat "$tmp" > /etc/resolv.conf && rm -f "$tmp"
+  echo "  /etc/resolv.conf: 127.0.0.1 is now the first nameserver"
+}
+
 echo "Restarting named"
 if service named start; then
   echo "DNS server has been successfully setup!"
+  point_host_at_named
 else
   echo "  named failed to start; see: journalctl -u named -n 50" >&2
 fi
