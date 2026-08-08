@@ -44,7 +44,20 @@ if [ -f ${base}/${DRUMEE_COMPONENTS}.js ]; then
   node ${base}/${DRUMEE_COMPONENTS}.js $RECONF $CHROOT
 else
   node ${base}/infra.js $RECONF $CHROOT
-  node ${base}/jitsi.js $RECONF $CHROOT
+  # jitsi.js only when conferencing is actually wanted. It was unconditional, and it
+  # renders an nginx vhost (20-jitsi.public.conf) that `include`s /etc/jitsi/*.conf — so a
+  # deployment without conferencing still got a vhost pointing at a Jitsi tree.
+  #
+  # Natively that was invisible: the same run rendered /etc/jitsi too, so nginx was
+  # satisfied. It stopped being invisible in the container channel, where the web role
+  # mounts the nginx configuration and not the Jitsi tree, and nginx refused everything
+  # with `open() "/etc/jitsi/meet.public.conf" failed` — a whole instance serving nothing
+  # because of a vhost nobody asked for.
+  if [ -n "${USE_JITSI:-}" ] && [ "${USE_JITSI}" != "0" ] && [ "${USE_JITSI}" != "false" ]; then
+    node ${base}/jitsi.js $RECONF $CHROOT
+  else
+    echo "Conferencing not requested (USE_JITSI unset) — skipping jitsi.js."
+  fi
 fi
 
 # Under DRUMEE_CHROOT the renderers wrote into that target, so the postcondition and
