@@ -246,7 +246,18 @@ function writeEcoSystem(data) {
       tpl: "server/ecosystem.config.js",
     },
   ];
-  writeTemplates({ ecosystem, chroot: Template.chroot }, targets);
+  // The RUNTIME path, not the chroot one. `ecosystem` is where this render writes the
+  // file, and under --chroot that is prefixed — so passing it to the template baked
+  // `require("/out/etc/drumee/infrastructure/ecosystem.json")` into
+  // srv/drumee/runtime/server/ecosystem.config.js, a path that exists only on the machine
+  // that did the rendering. Native installs never saw it because the prefix is empty there.
+  //
+  // The rule this is an instance of: a path written INTO a rendered file has to be the path
+  // the file's reader will see, which is never the chroot-prefixed one.
+  writeTemplates({
+    ecosystem: "/etc/drumee/infrastructure/ecosystem.json",
+    chroot: Template.chroot,
+  }, targets);
 }
 
 function getSocketPath() {
