@@ -21,6 +21,16 @@ let {
   ADMIN_EMAIL,
   BACKUP_STORAGE,
   CERTS_DIR,
+  // Where the database actually is, and who connects to it. Hardcoded as
+  // localhost/drumee-app until now, which is right for a single box and wrong for a
+  // deployment where the database is a container of its own: the rendered db.json said
+  // localhost, so the container channel had to overwrite the file from its own
+  // entrypoint — two writers for one credential, and the copy the render produced was
+  // never the one in use. Defaults below preserve the native values exactly.
+  DB_HOST,
+  DB_PORT,
+  DB_USER,
+  DB_PASSWORD,
   DRUMEE_DESCRIPTION,
   DRUMEE_DOMAIN_NAME,
   DRUMEE_HTTP_PORT,
@@ -774,9 +784,16 @@ function writeInfraConf(data) {
     writeCredentials("db", {
       // The one that matters most: MariaDB holds this password, and nothing here
       // re-grants it, so overwriting it locks the application out of its database.
-      password: existingCredential("db", ["password"]) || uniqueId(),
-      user: "drumee-app",
-      host: "localhost",
+      //
+      // Order matters. An existing secret always wins, because MariaDB already holds it.
+      // DB_PASSWORD comes next: in a compose deployment the database is initialised from
+      // it, so on a FIRST render it is the authoritative value and a generated one would
+      // lock the application out immediately. Generating is the last resort, exactly as
+      // before on a native first install.
+      password: existingCredential("db", ["password"]) || DB_PASSWORD || uniqueId(),
+      user: DB_USER || "drumee-app",
+      host: DB_HOST || "localhost",
+      ...(DB_PORT ? { port: Number(DB_PORT) } : {}),
     })
 
     writeCredentials("email", {
