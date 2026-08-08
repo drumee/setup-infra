@@ -47,12 +47,27 @@ else
   node ${base}/jitsi.js $RECONF $CHROOT
 fi
 
-if [ ! -e /etc/drumee/drumee.sh ]; then 
+# Under DRUMEE_CHROOT the renderers wrote into that target, so the postcondition and
+# everything after it live there too. Checking the absolute path made a chroot render
+# report "Setup has failed" after successfully producing the entire tree — measured on the
+# container channel's first preseed run, which is precisely the kind of thing an absolute
+# path hides until someone renders somewhere else.
+DEST="${DRUMEE_CHROOT:-}"
+
+if [ ! -e "$DEST/etc/drumee/drumee.sh" ]; then
   echo "Setup has failed"
   exit 1
-fi 
+fi
 
-source /etc/drumee/drumee.sh
+source "$DEST/etc/drumee/drumee.sh"
+
+# The crontab and everything below it are HOST operations. A chroot render produces the
+# files; installing them into this machine's crontab is not its business, and in a
+# container there is no cron to install them into.
+if [ -n "$DEST" ]; then
+  echo "Rendered into $DEST — skipping the host steps (crontab, services)."
+  exit 0
+fi
 
 if [ -d /etc/cron.d/drumee ]; then 
   crontab /etc/cron.d/drumee
