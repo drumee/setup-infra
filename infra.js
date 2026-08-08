@@ -27,6 +27,11 @@ let {
   // localhost, so the container channel had to overwrite the file from its own
   // entrypoint — two writers for one credential, and the copy the render produced was
   // never the one in use. Defaults below preserve the native values exactly.
+  // Where the application tier listens, for the nginx upstreams. Hardcoded 127.0.0.1 in
+  // the route templates until now — correct on one box, and guaranteed wrong when nginx and
+  // the app are separate containers: the web role proxied to itself and answered 502 with a
+  // perfectly healthy app one hostname away. Same shape of bug as db.json's host.
+  APP_HOST,
   DB_HOST,
   DB_PORT,
   DB_USER,
@@ -392,6 +397,7 @@ function getSysConfigs() {
     ["admin_email", args.admin_email || ADMIN_EMAIL],
     ["backup_storage", backup_storage, ""],
     ["certs_dir", args.certs_dir],
+    ["backend_host", APP_HOST, "127.0.0.1"],
     ["credential_dir", Template.chroot('etc/drumee/credential')],
     ["data_dir", args.data_dir, '/var/lib/drumee/data'],
     ["db_dir", args.db_dir, '/var/lib/mysql'],

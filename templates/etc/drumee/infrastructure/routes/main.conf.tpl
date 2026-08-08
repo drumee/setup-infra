@@ -48,7 +48,7 @@ location <%= location %> {
   add_header Cache-Control max-age=31536000;
 
   location ~ /(svc|vdo|service)/ {
-    proxy_pass http://127.0.0.1:<%= restPort %>;
+    proxy_pass http://<%= backend_host %>:<%= restPort %>;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -65,7 +65,7 @@ location <%= location %> {
   }
 
   location ~ /(ws|websocket)/ {
-    proxy_pass http://127.0.0.1:<%= pushPort %>;
+    proxy_pass http://<%= backend_host %>:<%= pushPort %>;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
@@ -133,7 +133,7 @@ location <%= location %> {
 
 #------------ parts/index ------------
   location ~ (/|)$ {
-    proxy_pass http://127.0.0.1:<%= pushPort %>;
+    proxy_pass http://<%= backend_host %>:<%= pushPort %>;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection 'upgrade';
