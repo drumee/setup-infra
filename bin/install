@@ -30,11 +30,21 @@ fi
 RECONF=""
 [ "${DRUMEE_RECONFIGURE:-0}" = "1" ] && RECONF="--reconfigure=1"
 
+# DRUMEE_CHROOT redirects every write under a target directory instead of onto this
+# host. It is what lets the container channel reuse THIS path — preseed, postinst,
+# bridge, renderers — instead of hand-mapping environment variables to infra.js flags,
+# which is where every container-side configuration bug came from
+# (docs/channel-parity.md §2).
+#
+# Unset natively, so nothing changes there.
+CHROOT=""
+[ -n "${DRUMEE_CHROOT:-}" ] && CHROOT="--chroot=$DRUMEE_CHROOT"
+
 if [ -f ${base}/${DRUMEE_COMPONENTS}.js ]; then 
-  node ${base}/${DRUMEE_COMPONENTS}.js $RECONF
+  node ${base}/${DRUMEE_COMPONENTS}.js $RECONF $CHROOT
 else
-  node ${base}/infra.js $RECONF
-  node ${base}/jitsi.js $RECONF
+  node ${base}/infra.js $RECONF $CHROOT
+  node ${base}/jitsi.js $RECONF $CHROOT
 fi
 
 if [ ! -e /etc/drumee/drumee.sh ]; then 
