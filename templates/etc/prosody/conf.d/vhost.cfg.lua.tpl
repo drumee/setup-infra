@@ -99,7 +99,7 @@ Component "internal-muc.<%= jitsi_domain %>" "muc"
     modules_enabled = {
         "ping";
     }
-    restrict_room_creation = true
+    restrict_room_creation = false
     muc_room_locking = false
     muc_room_default_public_jids = true
 
@@ -119,7 +119,7 @@ Component "muc.<%= jitsi_domain %>" "muc"
     muc_room_locking = false
     muc_room_default_public_jids = true
     muc_password_whitelist = {
-        "focus@<no value>"
+        "focus@auth.<%= jitsi_domain %>"
     }
 
 Component "focus.<%= jitsi_domain %>" "client_proxy"

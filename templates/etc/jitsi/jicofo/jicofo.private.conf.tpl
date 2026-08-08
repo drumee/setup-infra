@@ -31,7 +31,7 @@ jicofo {
     xmpp {
       client {
         enabled = true
-        hostname = "xmpp.<%= jitsi_private_domain %>"
+        hostname = "127.0.0.1"
         port = "5222"
         domain = "auth.<%= jitsi_private_domain %>"
         xmpp-domain = "<%= jitsi_private_domain %>"
