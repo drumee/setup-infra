@@ -388,7 +388,12 @@ function getSysConfigs() {
   if (public_domain) {
     use_email = 1;
   }
-  const nsupdate_key = Template.chroot('etc/bind/keys/update.key')
+  // The RUNTIME path. This value is written INTO named.conf.local as an `include`, so it
+  // must be the path named will read — not the chroot-prefixed one, which produced
+  // `include "/out/etc/bind/keys/update.key"` in a container render and made named refuse
+  // its entire configuration. Second instance of this exact mistake (see the ecosystem
+  // wrapper above): the chroot prefix belongs to where we WRITE and nowhere else.
+  const nsupdate_key = '/etc/bind/keys/update.key'
   if (args.own_certs_dir && existsSync(args.own_certs_dir)) args.certs_dir = args.own_certs_dir;
   const opt = [
     ["acme_dir", args.acme_dir || ACME_DIR || "/usr/share/acme/"],
@@ -398,7 +403,12 @@ function getSysConfigs() {
     ["backup_storage", backup_storage, ""],
     ["certs_dir", args.certs_dir],
     ["backend_host", APP_HOST, "127.0.0.1"],
-    ["credential_dir", Template.chroot('etc/drumee/credential')],
+    // Runtime path, like nsupdate_key and the ecosystem wrapper. This value is written into
+    // drumee.sh, drumee.json and ecosystem.json, all of which are READ by other processes —
+    // so under a chroot it leaked `/out/etc/drumee/credential` into three files the
+    // application sources. writeCredentials() resolves its own write target separately, so
+    // this only ever needed to be the reader's path.
+    ["credential_dir", '/etc/drumee/credential'],
     ["data_dir", args.data_dir, '/var/lib/drumee/data'],
     ["db_dir", args.db_dir, '/var/lib/mysql'],
     ["domain_desc", args.description, DRUMEE_DESCRIPTION || 'My Drumee Box'],
