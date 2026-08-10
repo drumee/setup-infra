@@ -8,7 +8,20 @@
 # -------------------------------------------------------------
 
 
-proxy_cache_path <%= cache_dir %>/<%= public_domain %> levels=1:2 keys_zone=<%= public_domain %>_keys_zone:10m max_size=10g inactive=60m;
+# Scoped "-public", and the suffix is load-bearing rather than cosmetic.
+#
+# nginx requires proxy_cache_path to be unique, and public_domain == private_domain is the
+# NORMAL case — one domain reachable on both interfaces. Both halves then derived
+# "<cache_dir>/<domain>" and nginx refused its ENTIRE configuration with:
+#
+#   [emerg] the same path name "/srv/drumee/cache/drumee.lan" used in
+#           01-public.conf:11 and in 02-private.conf:11
+#
+# Exactly the shape of the duplicate reverse-zone bug that stopped named: a single-NIC host
+# makes the public and private halves derive the same name, and the server rejects
+# everything rather than the one duplicate. Only the PUBLIC half is suffixed, so installs
+# that already have a cache under "<domain>" keep it.
+proxy_cache_path <%= cache_dir %>/<%= public_domain %>-public levels=1:2 keys_zone=<%= public_domain %>_public_keys_zone:10m max_size=10g inactive=60m;
 server {
 	listen <%= public_http_port %>;
 	listen [::]:<%= public_http_port %>;

@@ -397,7 +397,17 @@ function getSysConfigs() {
   if (args.own_certs_dir && existsSync(args.own_certs_dir)) args.certs_dir = args.own_certs_dir;
   const opt = [
     ["acme_dir", args.acme_dir || ACME_DIR || "/usr/share/acme/"],
-    ["acme_email_account", ACME_EMAIL_ACCOUNT, ADMIN_EMAIL],
+    // args.admin_email FIRST, matching the line below and the equivalent at :448.
+    //
+    // The bare ADMIN_EMAIL constant is sysEnv's, whose default is admin@localhost. When the
+    // answered admin email arrives as an argument rather than in the environment — which is
+    // what dpkg-reconfigure does — this rendered acme_email_account=admin@localhost beside a
+    // correct admin_email in the same file. setup-schemas' createAdmin resolves
+    // ADMIN_EMAIL || ACME_EMAIL_ACCOUNT || admin@<domain>, so the ADMIN ACCOUNT was created
+    // as admin@localhost: the operator's login identity and the destination of the welcome
+    // and password-reset mail, both wrong, on an instance whose every other domain field
+    // was right. Same class as the domain_name/main_domain fix; this key was missed.
+    ["acme_email_account", ACME_EMAIL_ACCOUNT, args.admin_email || ADMIN_EMAIL],
     ["acme_env_file", ACME_ENV_FILE, ""],
     ["admin_email", args.admin_email || ADMIN_EMAIL],
     ["backup_storage", backup_storage, ""],
